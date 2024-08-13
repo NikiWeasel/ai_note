@@ -5,6 +5,7 @@ import 'package:ai_note/provider/selected_notes_provider.dart';
 import 'package:ai_note/screens/chat_screen.dart';
 import 'package:ai_note/screens/note_screen.dart';
 import 'package:ai_note/widgets/ai_chat.dart';
+import 'package:ai_note/widgets/custom_scrollview.dart';
 import 'package:ai_note/widgets/main_drawer.dart';
 import 'package:ai_note/widgets/no_content.dart';
 import 'package:ai_note/widgets/notes_list.dart';
@@ -13,8 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
-
 import 'package:ai_note/provider/toggle_mode_provider.dart';
+import 'package:ai_note/widgets/input_widget.dart';
+import 'package:ai_note/models/sliver_appbar_delegate.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -53,6 +55,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final selectedNotesList = ref.watch(selectedNotesProvider);
 
     final notesList = ref.watch(notesProvider);
+
     Widget content = notesList.isEmpty
         ? NoContent(
             onNewNote: () {
@@ -67,7 +70,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? const Center(
                         child: CircularProgressIndicator(),
                       )
-                    : NotesList(notes: notesList));
+                    : Expanded(child: CustomScrollview()));
+
+    // final Widget customScrollView = CustomScrollView(
+    //   slivers: [
+    //     SliverToBoxAdapter(
+    //       child: Padding(
+    //         padding: const EdgeInsets.all(8.0),
+    //         child: InputWidget(
+    //             onPressed: (text) {},
+    //             icon: const Icon(
+    //               Icons.search,
+    //               color: Colors.white,
+    //             )),
+    //       ),
+    //     ),
+    //     SliverPersistentHeader(
+    //       pinned: true,
+    //       delegate: SliverAppBarDelegate(
+    //         minHeight: 60.0, // Минимальная высота при закреплении
+    //         maxHeight: 60.0, // Высота виджета в развернутом состоянии
+    //         child: Container(
+    //           color: Colors.orange,
+    //           child: Center(
+    //             child: Text(
+    //               'Закрепленный контейнер',
+    //               style: TextStyle(color: Colors.white),
+    //             ),
+    //           ),
+    //         ),
+    //       ),
+    //     ),
+    //     SliverGrid(
+    //       delegate: SliverChildBuilderDelegate(
+    //             (context, index) {
+    //           return Container(
+    //             color: Colors.blueAccent,
+    //             child: Center(
+    //               child: Text(
+    //                 'Item $index',
+    //                 style: TextStyle(color: Colors.white),
+    //               ),
+    //             ),
+    //           );
+    //         },
+    //         childCount: 30,
+    //       ),
+    //       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    //         crossAxisCount: 3,
+    //         crossAxisSpacing: 4.0,
+    //         mainAxisSpacing: 4.0,
+    //         childAspectRatio: 1.0,
+    //       ),
+    //     )
+    //   ],
+    // );
 
     // content = NotesList(notes: notesList);
 

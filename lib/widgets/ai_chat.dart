@@ -1,4 +1,5 @@
 import 'package:ai_note/screens/note_screen.dart';
+import 'package:ai_note/widgets/input_widget.dart';
 import 'package:ai_note/widgets/main_drawer.dart';
 import 'package:ai_note/widgets/speech_bubble.dart';
 import 'package:flutter/cupertino.dart';
@@ -105,23 +106,28 @@ class _AiChatState extends State<AiChat> {
   Widget build(BuildContext context) {
     Widget content = _msgList.isEmpty
         ? Center(
-            child: Text(
-              'Try asking something',
-              style:
-                  Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 24),
-            ),
-          )
+      child: Text(
+        'Try asking something',
+        style:
+        Theme
+            .of(context)
+            .textTheme
+            .bodyLarge!
+            .copyWith(fontSize: 24),
+      ),
+    )
         : ListView.builder(
-            reverse: true,
-            itemCount: _msgList.length + 1,
-            itemBuilder: (ctx, index) => index != 0
-                ? SpeechBubble(
-                    text: _msgList[index - 1].text,
-                    isMe: _msgList[index - 1].isMe)
-                : Container(
-                    // color: Colors.red,
-                    height: 80,
-                  ));
+        reverse: true,
+        itemCount: _msgList.length + 1,
+        itemBuilder: (ctx, index) =>
+        index != 0
+            ? SpeechBubble(
+            text: _msgList[index - 1].text,
+            isMe: _msgList[index - 1].isMe)
+            : Container(
+          // color: Colors.red,
+          height: 80,
+        ));
 
     return Stack(
       children: [
@@ -132,41 +138,11 @@ class _AiChatState extends State<AiChat> {
           right: 0,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(
-              // margin: EdgeInsets.all(0.8),
-              // padding: EdgeInsets.all(0.8),
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(46)),
-                color: Colors.black54,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    top: 8.0, bottom: 8.0, left: 16, right: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: TextField(
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                      ),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge!
-                          .copyWith(color: Colors.white),
-                      controller: _controller,
-                    )),
-                    IconButton(
-                        onPressed: () {
-                          sendRequest(_controller.text);
-                          _controller.clear();
-                        },
-                        icon: Icon(
-                          Icons.send,
-                          color: Colors.white,
-                        ))
-                  ],
-                ),
+            child: InputWidget(
+              onPressed: sendRequest,
+              icon: const Icon(
+                Icons.send,
+                color: Colors.white,
               ),
             ),
           ),

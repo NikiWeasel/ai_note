@@ -26,18 +26,22 @@ class NoteGritItem extends ConsumerStatefulWidget {
 }
 
 class _NoteGritItemState extends ConsumerState<NoteGritItem> {
-  bool _isChecked = false;
+  // bool _isChecked = false;
 
   @override
   Widget build(BuildContext context) {
     final noteFunctions = ref.watch(noteActionsProvider);
     final isSelectingMode = ref.watch(toggleModeProvider);
     final selectedNotes = ref.watch(selectedNotesProvider.notifier);
+    final selectedNotesList = ref.watch(selectedNotesProvider);
+    bool isSelected = false;
+    final matchingNotes =
+        selectedNotesList.where((note) => widget.note.id == note.id).toList();
+    if (matchingNotes.isNotEmpty) {
+      isSelected = true;
+    }
 
     void checkItem() {
-      setState(() {
-        _isChecked = !_isChecked;
-      });
       selectedNotes.toggleNoteSelection(widget.note);
     }
 
@@ -45,7 +49,7 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
       width: 15,
       height: 15,
       child: Checkbox(
-          value: _isChecked,
+          value: isSelected,
           onChanged: (bool? value) {
             checkItem();
           }),
