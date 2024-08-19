@@ -7,7 +7,7 @@ class InputWidget extends StatelessWidget {
   // final TextEditingController _controller;
   final void Function(String text) onPressed;
 
-  // final void Function(String text) onPressed;
+  // final void Function(String text) onPressed;//TODO сделать просто иконку слева и выполнять функцию просто по кнопке на клаве
   final Icon icon;
 
   @override
@@ -18,7 +18,7 @@ class InputWidget extends StatelessWidget {
       // margin: EdgeInsets.all(0.8),
       // padding: EdgeInsets.all(0.8),
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(46)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
         color: Colors.black54,
       ),
       child: Padding(

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_note/models/note.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:ai_note/provider/function_provider.dart';
+import 'package:ai_note/provider/note_function_provider.dart';
 
 class NoteGritItem extends ConsumerStatefulWidget {
   const NoteGritItem({
@@ -66,9 +66,7 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
       onLongPress: () {
         ref.read(selectedNotesProvider.notifier).clearNoteSelection();
         ref.read(toggleModeProvider.notifier).toggleSelectingMode();
-        if (isSelectingMode) {
-          checkItem();
-        }
+        checkItem();
       },
       splashColor: Theme.of(context).primaryColor,
       borderRadius: BorderRadius.circular(16),

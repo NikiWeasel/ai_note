@@ -4,10 +4,8 @@ import 'package:ai_note/widgets/note_grit_item.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_note/screens/note_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:ai_note/provider/toggle_mode_provider.dart';
 import 'package:ai_note/provider/note_provider.dart';
-import 'main_drawer.dart';
 
 class NotesList extends ConsumerStatefulWidget {
   const NotesList({super.key, required this.notes});

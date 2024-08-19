@@ -4,15 +4,39 @@ import 'package:path_provider/path_provider.dart' as syspath;
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart' as sql;
 import 'package:sqflite/sqlite_api.dart';
+import 'package:ai_note/models/category.dart';
+
+part 'package:ai_note/provider/categories_provider.dart';
 
 Future<Database> _getDatabase() async {
   final dbPath = await sql.getDatabasesPath();
   final db = await sql.openDatabase(path.join(dbPath, 'notes.db'),
-      onCreate: (db, version) {
-    return db.execute(
-        'CREATE TABLE user_notes (id TEXT PRIMARY KEY, title TEXT, content TEXT, datetime TEXT)');
+      onCreate: (db, version) async {
+    // return db.execute(
+    //     'CREATE TABLE user_notes (id TEXT PRIMARY KEY, title TEXT, content TEXT, datetime TEXT)');
+    await _createDb(db);
   }, version: 1);
   return db;
+}
+
+Future<void> _createDb(Database db) async {
+  await db.execute('''
+  CREATE TABLE user_notes (id TEXT PRIMARY KEY, title TEXT, content TEXT, datetime TEXT)''');
+  await db.execute('''
+          CREATE TABLE categories (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL
+          );
+        ''');
+  await db.execute('''
+          CREATE TABLE category_notes (
+            category_id TEXT,
+            note_id TEXT,
+            FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+            FOREIGN KEY (note_id) REFERENCES user_notes(id) ON DELETE CASCADE,
+            PRIMARY KEY (category_id, note_id)
+          );
+        ''');
 }
 
 class NotesNotifier extends StateNotifier<List<Note>> {

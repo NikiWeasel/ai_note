@@ -1,6 +1,5 @@
 import 'package:ai_note/screens/note_screen.dart';
 import 'package:ai_note/widgets/input_widget.dart';
-import 'package:ai_note/widgets/main_drawer.dart';
 import 'package:ai_note/widgets/speech_bubble.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -106,28 +105,23 @@ class _AiChatState extends State<AiChat> {
   Widget build(BuildContext context) {
     Widget content = _msgList.isEmpty
         ? Center(
-      child: Text(
-        'Try asking something',
-        style:
-        Theme
-            .of(context)
-            .textTheme
-            .bodyLarge!
-            .copyWith(fontSize: 24),
-      ),
-    )
+            child: Text(
+              'Try asking something',
+              style:
+                  Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 24),
+            ),
+          )
         : ListView.builder(
-        reverse: true,
-        itemCount: _msgList.length + 1,
-        itemBuilder: (ctx, index) =>
-        index != 0
-            ? SpeechBubble(
-            text: _msgList[index - 1].text,
-            isMe: _msgList[index - 1].isMe)
-            : Container(
-          // color: Colors.red,
-          height: 80,
-        ));
+            reverse: true,
+            itemCount: _msgList.length + 1,
+            itemBuilder: (ctx, index) => index != 0
+                ? SpeechBubble(
+                    text: _msgList[index - 1].text,
+                    isMe: _msgList[index - 1].isMe)
+                : Container(
+                    // color: Colors.red,
+                    height: 80,
+                  ));
 
     return Stack(
       children: [

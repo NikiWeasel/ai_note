@@ -24,7 +24,8 @@ class NoteScreen extends StatefulWidget {
 class _NoteScreenState extends State<NoteScreen> {
   TextEditingController _contentController = TextEditingController();
   TextEditingController _titleController = TextEditingController();
-  String _markdownData = '';
+
+  // String _markdownData = '';
   var _focusNode = FocusNode();
   bool isEditing = true;
 
@@ -42,7 +43,7 @@ class _NoteScreenState extends State<NoteScreen> {
     });
   }
 
-  _saveNote() {}
+  // _saveNote() {}
 
   _changeMode() {
     setState(() {
@@ -87,7 +88,7 @@ class _NoteScreenState extends State<NoteScreen> {
                 _changeMode();
                 print(_widgetHeight);
               },
-              icon: isEditing ? Icon(Icons.done) : Icon(Icons.edit))
+              icon: isEditing ? const Icon(Icons.done) : const Icon(Icons.edit))
         ],
       ),
       // drawer: ...,
@@ -104,41 +105,62 @@ class _NoteScreenState extends State<NoteScreen> {
           children: [
             Expanded(
               child: Padding(
-                padding:
-                    const EdgeInsets.only(top: 15.0, left: 8.0, right: 8.0),
+                padding: const EdgeInsets.only(left: 8.0, right: 8.0),
                 child: SingleChildScrollView(
-                  child: isEditing
-                      ? SizedBox(
-                          height: 500,
-                          child: TextField(
-                            key: _widgetKey,
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: "Enter Markdown text…",
-                            ),
-                            controller: _contentController,
-                            focusNode: _focusNode,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0, right: 8),
+                          child: Text(
+                            'Last edit: ${widget.note.dateTime}',
                             style: Theme.of(context)
                                 .textTheme
-                                .bodyLarge!
-                                .copyWith(),
-                          ),
-                        )
-                      : Align(
-                          alignment: Alignment.topLeft,
-                          child: SizedBox(
-                            height: _widgetHeight + 100,
-                            child: InkWell(
-                              onDoubleTap: _changeMode,
-                              splashColor: Colors.transparent,
-                              child: Markdown(
-                                  // controller: _controller,
-                                  data: _contentController.text),
-                            ),
+                                .bodySmall!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface),
                           ),
                         ),
+                        Container(
+                          width: double.infinity,
+                          height: 1,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        isEditing
+                            ? SizedBox(
+                                height: 500,
+                                child: TextField(
+                                  key: _widgetKey,
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: null,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "Enter Markdown text…",
+                                  ),
+                                  controller: _contentController,
+                                  focusNode: _focusNode,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(),
+                                ),
+                              )
+                            : Align(
+                                alignment: Alignment.topLeft,
+                                child: SizedBox(
+                                  height: _widgetHeight + 100,
+                                  child: InkWell(
+                                    onDoubleTap: _changeMode,
+                                    splashColor: Colors.transparent,
+                                    child: Markdown(
+                                        // controller: _controller,
+                                        data: _contentController.text),
+                                  ),
+                                ),
+                              ),
+                      ]),
                 ),
               ),
             ),

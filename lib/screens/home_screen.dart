@@ -1,12 +1,11 @@
 import 'package:ai_note/models/note.dart';
-import 'package:ai_note/provider/function_provider.dart';
+import 'package:ai_note/provider/note_function_provider.dart';
 import 'package:ai_note/provider/note_provider.dart';
 import 'package:ai_note/provider/selected_notes_provider.dart';
 import 'package:ai_note/screens/chat_screen.dart';
 import 'package:ai_note/screens/note_screen.dart';
 import 'package:ai_note/widgets/ai_chat.dart';
 import 'package:ai_note/widgets/custom_scrollview.dart';
-import 'package:ai_note/widgets/main_drawer.dart';
 import 'package:ai_note/widgets/no_content.dart';
 import 'package:ai_note/widgets/notes_list.dart';
 import 'package:flutter/cupertino.dart';
@@ -53,6 +52,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final noteFunctions = ref.watch(noteActionsProvider);
     final isSelectingMode = ref.watch(toggleModeProvider);
     final selectedNotesList = ref.watch(selectedNotesProvider);
+    final isSelectingModeNotifier = ref.watch(toggleModeProvider.notifier);
 
     final notesList = ref.watch(notesProvider);
 
@@ -70,116 +70,86 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? const Center(
                         child: CircularProgressIndicator(),
                       )
-                    : Expanded(child: CustomScrollview()));
+                    : const CustomScrollview());
 
-    // final Widget customScrollView = CustomScrollView(
-    //   slivers: [
-    //     SliverToBoxAdapter(
-    //       child: Padding(
-    //         padding: const EdgeInsets.all(8.0),
-    //         child: InputWidget(
-    //             onPressed: (text) {},
-    //             icon: const Icon(
-    //               Icons.search,
-    //               color: Colors.white,
-    //             )),
-    //       ),
-    //     ),
-    //     SliverPersistentHeader(
-    //       pinned: true,
-    //       delegate: SliverAppBarDelegate(
-    //         minHeight: 60.0, // Минимальная высота при закреплении
-    //         maxHeight: 60.0, // Высота виджета в развернутом состоянии
-    //         child: Container(
-    //           color: Colors.orange,
-    //           child: Center(
-    //             child: Text(
-    //               'Закрепленный контейнер',
-    //               style: TextStyle(color: Colors.white),
-    //             ),
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //     SliverGrid(
-    //       delegate: SliverChildBuilderDelegate(
-    //             (context, index) {
-    //           return Container(
-    //             color: Colors.blueAccent,
-    //             child: Center(
-    //               child: Text(
-    //                 'Item $index',
-    //                 style: TextStyle(color: Colors.white),
-    //               ),
-    //             ),
-    //           );
-    //         },
-    //         childCount: 30,
-    //       ),
-    //       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-    //         crossAxisCount: 3,
-    //         crossAxisSpacing: 4.0,
-    //         mainAxisSpacing: 4.0,
-    //         childAspectRatio: 1.0,
-    //       ),
-    //     )
-    //   ],
-    // );
+    bool onBackPressed() {
+      if (isSelectingMode) {
+        setState(() {
+          isSelectingModeNotifier.toggleSelectingMode();
+        });
+        return false;
+      }
+      return true;
+    }
 
-    // content = NotesList(notes: notesList);
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        title: const Text('AI Note'),
-        actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (ctx) => ChatScreen()));
-              },
-              icon: const Icon(Icons.accessible_forward_sharp))
-        ],
-      ),
-      bottomNavigationBar: isSelectingMode
-          ? BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.arrow_forward,
+    return PopScope(
+      canPop: !isSelectingMode,
+      onPopInvoked: (didPop) {
+        if (didPop) {
+          return;
+        }
+        final navigator = Navigator.of(context);
+        final shouldPop = onBackPressed();
+        if (shouldPop) {
+          navigator.pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          title: isSelectingMode
+              ? Center(
+                  child: Text('Selected: ${selectedNotesList.length}'),
+                )
+              : const Text('AI Note'),
+          actions: isSelectingMode
+              ? null
+              : [
+                  IconButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (ctx) => ChatScreen()));
+                      },
+                      icon: const Icon(Icons.accessible_forward_sharp))
+                ],
+        ),
+        bottomNavigationBar: isSelectingMode
+            ? BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      Icons.arrow_forward,
+                    ),
+                    label: 'Move',
                   ),
-                  label: 'Move',
-                ),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.arrow_upward_outlined), label: 'Pin'),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.arrow_forward), label: 'Move'),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.delete), label: 'Delete'),
-              ],
-              onTap: selectedNotesList.isNotEmpty
-                  ? (index) {
-                      _onItemTapped(index, noteFunctions, selectedNotesList);
-                    }
-                  : null,
-              selectedItemColor: Theme.of(context).colorScheme.onSurface,
-              unselectedItemColor: Theme.of(context).colorScheme.onSurface,
-            )
-          : null,
-      //
-      // ),
-      // drawer: MainDrawer(),
-      body: content,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          noteFunctions.onCreate(ref, context);
-        },
-        backgroundColor:
-            Theme.of(context).colorScheme.primaryContainer.withRed(23),
-        child: Icon(
-          Icons.add,
-          color: Theme.of(context).colorScheme.onSurface,
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.arrow_upward_outlined), label: 'Pin'),
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.arrow_forward), label: 'Move'),
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.delete), label: 'Delete'),
+                ],
+                onTap: selectedNotesList.isNotEmpty
+                    ? (index) {
+                        _onItemTapped(index, noteFunctions, selectedNotesList);
+                      }
+                    : null,
+                selectedItemColor: Theme.of(context).colorScheme.onSurface,
+                unselectedItemColor: Theme.of(context).colorScheme.onSurface,
+              )
+            : null,
+        body: content,
+        floatingActionButton: FloatingActionButton(
+          mini: true,
+          onPressed: () {
+            noteFunctions.onCreate(ref, context);
+          },
+          backgroundColor: Colors.black54,
+          child: Icon(
+            Icons.add,
+            color: Theme.of(context).colorScheme.onSecondary,
+          ),
         ),
       ),
     );
