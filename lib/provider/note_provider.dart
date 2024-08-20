@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ai_note/models/note.dart';
 import 'package:path_provider/path_provider.dart' as syspath;
@@ -57,7 +58,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
   }
 
   void addNote(String title, String content) async {
-    final appDir = await syspath.getApplicationDocumentsDirectory();
+    // final appDir = await syspath.getApplicationDocumentsDirectory();
     // final filename = path.basename(image.path);
     // final copiedImage = await image.copy('${appDir.path}/$filename');
 
@@ -79,7 +80,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
   }
 
   void editNote(Note oldNote, String newTitle, String newContent) async {
-    final appDir = await syspath.getApplicationDocumentsDirectory();
+    // final appDir = await syspath.getApplicationDocumentsDirectory();
     final db = await _getDatabase();
 
     final newNote = Note(title: newTitle, content: newContent, id: oldNote.id);
@@ -100,7 +101,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
   }
 
   void deleteNote(Note noteToDelete) async {
-    final appDir = await syspath.getApplicationDocumentsDirectory();
+    // final appDir = await syspath.getApplicationDocumentsDirectory();
     final db = await _getDatabase();
 
     db.delete('user_notes', where: 'id = \'${noteToDelete.id}\'');

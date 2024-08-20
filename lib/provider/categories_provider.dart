@@ -120,8 +120,7 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
     final matchingList =
         state.where((category) => category.name == name).toList();
     if (matchingList.isNotEmpty) {
-      // print('УЖЕ ЕСТЬ');
-      return false; //TODO Ошибка (категория уже есть)
+      return false;
     }
     final newCategory = Category(name: name, notesList: null);
 
@@ -134,9 +133,31 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
     return true;
   }
 
-  // Future<void> insertNote(Database db, String content) async {
-  //   await db.insert('notes', {'content': content});
-  // }
+  Future<void> deleteCategory(Category category) async {
+    final db = await _getDatabase();
+    db.delete('categories', where: 'id = \'${category.id}\'');
+    db.delete('category_notes', where: 'category_id = \'${category.id}\'');
+    // print(category.name);
+    state = state.where((c) => c.id != category.id).toList();
+  }
+
+  Future<void> renameCategory(Category category, String newName) async {
+    // final appDir = await syspath.getApplicationDocumentsDirectory();
+    final db = await _getDatabase();
+
+    final newCat = Category(name: newName);
+
+    db.update(
+        'categories',
+        {
+          'name': newCat.name,
+        },
+        where: 'id = \'${category.id}\'');
+
+    state = state.where((m) => m.id != category.id).toList();
+
+    state = [newCat, ...state];
+  }
 
   Future<void> linkNoteToCategory(String categoryId, String noteId) async {
     final db = await _getDatabase();

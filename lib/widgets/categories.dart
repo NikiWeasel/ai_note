@@ -25,18 +25,21 @@ class HoleClipper extends CustomClipper<Path> {
 class Categories extends ConsumerStatefulWidget {
   const Categories({super.key});
 
+  // final int categoriesLength;
+
   @override
   ConsumerState<Categories> createState() => _CategoriesState();
 }
 
 class _CategoriesState extends ConsumerState<Categories> {
+  // late List<bool> isSelectedList;
   late TextEditingController _controller;
-  late List<bool> isSelectedList;
   late final categoriesListNotify;
+
+  int activeIndex = 0;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _controller = TextEditingController();
     categoriesListNotify =
@@ -54,24 +57,25 @@ class _CategoriesState extends ConsumerState<Categories> {
     final categoriesList = ref.watch(categoriesProvider);
     final categoriesNotifier = ref.watch(categoriesProvider.notifier);
 
+    List<bool> isSelectedList;
     isSelectedList = List.generate(categoriesList.length, (_) => false);
-    print(categoriesList.length);
-    isSelectedList.insert(0, true);
+    isSelectedList.insert(activeIndex, true);
 
-    void addNewCategory() async {
-      final ss = await showModalBottomSheet(
+    void addNewCategory() {
+      showModalBottomSheet(
           context: context,
           isScrollControlled: true,
-          builder: (ctx) => EditCategoryWidget(
-                text: null,
-                onSave: (String name) {}, //TODO добавить логику создания
+          builder: (ctx) => EditCategoryWidget.create(
+                newCategoryText: _controller.text,
+                onSave: (String name) async {
+                  bool isAvailible =
+                      await categoriesNotifier.insertCategory(name);
+                  if (!isAvailible) {
+                    return;
+                  }
+                },
               ));
-      // print(isSelectedList);
-      print(ss);
-      categoriesNotifier.insertCategory('New Category');
       isSelectedList.add(false);
-
-      print(categoriesList);
     }
 
     Widget addButton = Container(
@@ -86,11 +90,15 @@ class _CategoriesState extends ConsumerState<Categories> {
         ),
         onPressed: () {
           addNewCategory();
-          // Navigator.of(context)
-          //     .push(MaterialPageRoute(builder: (ctx) => CategoryScreen()));
         },
       ),
     );
+
+    void onTap(int index) {
+      setState(() {
+        activeIndex = index;
+      });
+    }
 
     return Stack(
       children: [
@@ -103,37 +111,31 @@ class _CategoriesState extends ConsumerState<Categories> {
               child: Row(
                 children: [
                   ToggleButtons(
+                    // selectedColor: Theme.of(context).colorScheme.,
                     borderWidth: 0,
                     // splashColor: Colors.yellow,
                     renderBorder: false,
-                    onPressed: (int index) {
-                      setState(() {
-                        for (int buttonIndex = 0;
-                            buttonIndex < isSelectedList.length;
-                            buttonIndex++) {
-                          if (buttonIndex == index) {
-                            isSelectedList[buttonIndex] =
-                                !isSelectedList[buttonIndex];
-                          } else {
-                            isSelectedList[buttonIndex] = false;
-                          }
-                        }
-                      });
-                    },
                     isSelected: isSelectedList,
                     // selectedColor: Colors.amber,
                     // renderBorder: false,
                     fillColor: Colors.transparent,
                     children: <Widget>[
                       CategoryWidget(
-                          isSelected: isSelectedList[0], text: 'All'),
-                      for (int i = 0; i < categoriesList.length; i++)
+                        isSelected: isSelectedList[0],
+                        category: null,
+                        index: 0,
+                        onTap: onTap,
+                      ),
+                      for (int i = 1; i < isSelectedList.length; i++)
                         CategoryWidget(
-                            isSelected: isSelectedList[i + 1],
-                            text: categoriesList[i].name),
+                          isSelected: isSelectedList[i],
+                          category: categoriesList[i - 1],
+                          index: i,
+                          onTap: onTap,
+                        ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 35,
                   ),
                 ],

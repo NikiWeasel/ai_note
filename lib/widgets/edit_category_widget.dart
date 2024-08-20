@@ -1,15 +1,52 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_note/models/category.dart';
 
 class EditCategoryWidget extends StatefulWidget {
-  const EditCategoryWidget(
-      {super.key, required this.text, required this.onSave});
+  const EditCategoryWidget._internal(
+      {super.key,
+      this.newCategoryText,
+      this.onSave,
+      this.onDelete,
+      this.category,
+      this.onEdit});
 
-  final String? text;
-  final void Function(String name) onSave;
+  final String? newCategoryText;
+  final Category? category;
+  final void Function(String name)? onSave;
+  final void Function(Category category, String newName)? onEdit;
+  final void Function(Category cat)? onDelete;
+
+  factory EditCategoryWidget.create({
+    Key? key,
+    required String newCategoryText,
+    required void Function(String name) onSave,
+  }) {
+    return EditCategoryWidget._internal(
+      key: key,
+      newCategoryText: newCategoryText,
+      onSave: onSave,
+    );
+  }
+
+  // Именованный конструктор для редактирования существующей категории
+  factory EditCategoryWidget.edit({
+    Key? key,
+    required String newCategoryText,
+    required Category category,
+    required void Function(Category category, String newName) onEdit,
+    required void Function(Category cat) onDelete,
+  }) {
+    return EditCategoryWidget._internal(
+      key: key,
+      category: category,
+      onEdit: onEdit,
+      onDelete: onDelete,
+    );
+  }
 
   @override
   State<EditCategoryWidget> createState() => _EditCategoryWidgetState();
@@ -21,7 +58,7 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
   @override
   void initState() {
     _controller = TextEditingController();
-    _controller.text = widget.text ?? '';
+    _controller.text = widget.newCategoryText ?? '';
     super.initState();
   }
 
@@ -40,7 +77,7 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
             return AlertDialog(
               title: const Text('Warning'),
               content: Text(
-                'Delete category "${widget.text}"?',
+                'Delete category "${widget.newCategoryText}"?',
               ),
               actions: <Widget>[
                 TextButton(
@@ -58,7 +95,8 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
                   ),
                   child: const Text('Yes'),
                   onPressed: () {
-                    //TODO логика удаления
+                    widget.onDelete!(widget.category!);
+                    Navigator.of(context).pop();
                   },
                 ),
               ],
@@ -71,12 +109,14 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text(
-              widget.text == null ? 'Creare Category' : 'Edit Category',
+              widget.newCategoryText != null
+                  ? 'Create Category'
+                  : 'Edit Category',
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
@@ -89,7 +129,7 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
             Row(
               // mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                widget.text == null
+                widget.newCategoryText != null
                     ? const SizedBox.shrink()
                     : TextButton(
                         onPressed: () {
@@ -121,11 +161,17 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
                 ),
                 TextButton(
                   onPressed: () {
-                    if ((widget.text == _controller.text) ||
-                        (widget.text == null && _controller.text == '')) {
+                    if ((widget.newCategoryText == _controller.text) ||
+                        (widget.newCategoryText == null &&
+                            _controller.text == '')) {
                       return;
                     }
-                    widget.onSave(_controller.text);
+                    if (widget.onSave != null) {
+                      widget.onSave!(_controller.text);
+                    }
+                    if (widget.onEdit != null) {
+                      widget.onEdit!(widget.category!, _controller.text);
+                    }
                     Navigator.pop(context);
                   },
                   child: Text(

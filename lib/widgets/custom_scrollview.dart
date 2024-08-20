@@ -32,6 +32,7 @@ class CustomScrollview extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notesList = ref.watch(notesProvider);
+    final catList = ref.watch(categoriesProvider);
 
     return CustomScrollView(
       slivers: [
@@ -51,7 +52,7 @@ class CustomScrollview extends ConsumerWidget {
           delegate: SliverAppBarDelegate(
             minHeight: 60.0, // Минимальная высота при закреплении
             maxHeight: 60.0, // Высота виджета в развернутом состоянии
-            child: const Categories(),
+            child: Categories(),
           ),
         ),
         NotesList(notes: notesList)
