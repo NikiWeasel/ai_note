@@ -173,3 +173,16 @@ final categoriesProvider =
     StateNotifierProvider<CategoriesNotifier, List<Category>>((ref) {
   return CategoriesNotifier();
 });
+
+class CurrentCategoryNotifier extends StateNotifier<int> {
+  CurrentCategoryNotifier() : super(0);
+
+  void setCategory(int index) {
+    state = index;
+  }
+}
+
+final categoryIndexProvider =
+    StateNotifierProvider<CurrentCategoryNotifier, int>((ref) {
+  return CurrentCategoryNotifier();
+});

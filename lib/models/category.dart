@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import 'package:ai_note/models/note.dart';
+
 Uuid uuid = const Uuid();
 
 class Category {

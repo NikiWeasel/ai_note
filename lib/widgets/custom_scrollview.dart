@@ -1,13 +1,13 @@
 import 'package:ai_note/widgets/categories.dart';
+import 'package:ai_note/widgets/no_content.dart';
 import 'package:ai_note/widgets/notes_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:ai_note/models/sliver_appbar_delegate.dart';
 import 'package:ai_note/widgets/input_widget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:ai_note/provider/note_provider.dart';
+import 'package:ai_note/models/note.dart';
 
 class CustomScrollview extends ConsumerWidget {
   const CustomScrollview({super.key});
@@ -33,6 +33,18 @@ class CustomScrollview extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notesList = ref.watch(notesProvider);
     final catList = ref.watch(categoriesProvider);
+    final catIndexList = ref.watch(categoryIndexProvider);
+
+    List<Note> catNoteList = [];
+    List<Note> helpCatNoteList = [];
+    if (catIndexList < catList.length &&
+        catList[catIndexList].notesList != null) {
+      for (var catNote in catList[catIndexList].notesList!) {
+        helpCatNoteList =
+            notesList.where((note) => note.id == catNote).toList();
+        catNoteList = [...helpCatNoteList, ...catNoteList];
+      }
+    }
 
     return CustomScrollView(
       slivers: [
@@ -52,10 +64,10 @@ class CustomScrollview extends ConsumerWidget {
           delegate: SliverAppBarDelegate(
             minHeight: 60.0, // Минимальная высота при закреплении
             maxHeight: 60.0, // Высота виджета в развернутом состоянии
-            child: Categories(),
+            child: const Categories(),
           ),
         ),
-        NotesList(notes: notesList)
+        NotesList(notes: catIndexList == 0 ? notesList : catNoteList)
       ],
     );
   }

@@ -10,7 +10,7 @@ import 'package:ai_note/provider/note_provider.dart';
 class NotesList extends ConsumerStatefulWidget {
   const NotesList({super.key, required this.notes});
 
-  final List<Note> notes;
+  final List<Note>? notes;
 
   @override
   ConsumerState<NotesList> createState() {
@@ -45,23 +45,42 @@ class _NoteListState extends ConsumerState<NotesList> {
     //   ],
     // );
 
-    return SliverGrid(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: NoteGritItem(note: widget.notes[index]),
+    return widget.notes!.isEmpty
+        ? SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 150,
+                ),
+                Center(
+                  child: Text(
+                    'Empty Category',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge!
+                        .copyWith(fontSize: 25),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : SliverGrid(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: NoteGritItem(note: widget.notes![index]),
+                );
+              },
+              childCount: notesList.length,
+            ),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              //TODO поменять (будет плохо выглядить на большом экране)
+              crossAxisCount: 2,
+              crossAxisSpacing: 2.0,
+              mainAxisSpacing: 2.0,
+              childAspectRatio: 1.0,
+            ),
           );
-        },
-        childCount: notesList.length,
-      ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        //TODO поменять (будет плохо выглядить на большом экране)
-        crossAxisCount: 2,
-        crossAxisSpacing: 2.0,
-        mainAxisSpacing: 2.0,
-        childAspectRatio: 1.0,
-      ),
-    );
   }
 }

@@ -22,6 +22,7 @@ class CategoryWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoryNotifier = ref.watch(categoriesProvider.notifier);
+    final categoryIndexNotifier = ref.watch(categoryIndexProvider.notifier);
 
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
@@ -29,6 +30,7 @@ class CategoryWidget extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: () {
           onTap(index);
+          categoryIndexNotifier.setCategory(index);
         },
         onLongPress: () {
           showModalBottomSheet(
