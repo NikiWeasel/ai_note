@@ -35,6 +35,8 @@ class CategoryWidget extends ConsumerWidget {
         onTap: () {
           onTap(index);
           categoryIndexNotifier.setCategory(index);
+          // ref.read(categoriesProvider.notifier).loadCategories();
+
           if (index == 0) {
             return;
           }
@@ -43,6 +45,9 @@ class CategoryWidget extends ConsumerWidget {
               .loadContent(notesList, catList, index);
         },
         onLongPress: () {
+          if (index == 0) {
+            return;
+          }
           showModalBottomSheet(
               context: context,
               isScrollControlled: true,

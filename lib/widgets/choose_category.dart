@@ -19,8 +19,7 @@ class ChooseCategory extends ConsumerWidget {
 
     void addNoteToCat(Category cat) async {
       for (var note in selectedNotes) {
-        final isAvailable =
-            await catListNotifier.linkNoteToCategory(cat.id, note.id);
+        final isAvailable = await catListNotifier.linkNoteToCategory(cat, note);
         ref.read(categoriesProvider.notifier).loadCategories();
         if (!isAvailable) {
           showTopSnackBar(

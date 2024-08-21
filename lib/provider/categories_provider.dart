@@ -34,19 +34,6 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
     final db = await _getDatabase();
     final catsData = await db.query('categories');
     final catNotesData = await db.query('category_notes');
-    // final categories = catsData
-    //     .map((row) => Category(
-    //           id: row['id'] as String,
-    //           name: row['name'] as String,
-    //         ))
-    //     .toList();
-    // final categories2 = catNotesData
-    //     .map((row) => Category(
-    //           id: row['id'] as String,
-    //           name: row['name'] as String,
-    //         ))
-    //     .toList();
-
     // Создаем карту, где ключом будет category_id, а значением — список note_id
     final Map<String, List<String>> categoryNotesMap = {};
 
@@ -75,7 +62,8 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
       );
     }).toList();
 
-    state = categories;
+    state = categories.reversed
+        .toList(); //TODO временный фикс// сделать чтобы недавние отображались первые
   }
 
   Future<void> getCategoryWithNotes(Database db, String categoryId) async {
@@ -159,13 +147,13 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
     state = [newCat, ...state];
   }
 
-  Future<bool> linkNoteToCategory(String categoryId, String noteId) async {
+  Future<bool> linkNoteToCategory(Category category, Note note) async {
     final db = await _getDatabase();
 
     var result = await db.query(
       'category_notes',
       where: 'category_id = ? AND note_id = ?',
-      whereArgs: [categoryId, noteId],
+      whereArgs: [category.id, note.id],
     );
 
     if (result.isNotEmpty) {
@@ -173,9 +161,13 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
     }
 
     await db.insert('category_notes', {
-      'category_id': categoryId,
-      'note_id': noteId,
+      'category_id': category.id,
+      'note_id': note.id,
     });
+
+    state = state.where((m) => m.id != category.id).toList();
+
+    state = [category, ...state];
     return true;
   }
 }
@@ -206,7 +198,7 @@ class CategoryContentNotifier extends StateNotifier<List<Note>> {
     state = [];
     List<Note> helpCatNoteList = [];
     if (catIndexList != 0 &&
-        catIndexList < catList.length &&
+        catIndexList - 1 < catList.length &&
         catList[catIndexList - 1].notesList != null) {
       for (var catNote in catList[catIndexList - 1].notesList!) {
         helpCatNoteList =

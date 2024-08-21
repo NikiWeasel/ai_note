@@ -74,6 +74,7 @@ class _CategoriesState extends ConsumerState<Categories> {
                 onSave: (String name) async {
                   bool isAvailible =
                       await categoriesNotifier.insertCategory(name);
+                  // categoriesListNotify.loadCategories();
                   if (!isAvailible) {
                     return;
                   }
