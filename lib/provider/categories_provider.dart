@@ -159,13 +159,24 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
     state = [newCat, ...state];
   }
 
-  Future<void> linkNoteToCategory(String categoryId, String noteId) async {
+  Future<bool> linkNoteToCategory(String categoryId, String noteId) async {
     final db = await _getDatabase();
+
+    var result = await db.query(
+      'category_notes',
+      where: 'category_id = ? AND note_id = ?',
+      whereArgs: [categoryId, noteId],
+    );
+
+    if (result.isNotEmpty) {
+      return false;
+    }
 
     await db.insert('category_notes', {
       'category_id': categoryId,
       'note_id': noteId,
     });
+    return true;
   }
 }
 
@@ -185,4 +196,29 @@ class CurrentCategoryNotifier extends StateNotifier<int> {
 final categoryIndexProvider =
     StateNotifierProvider<CurrentCategoryNotifier, int>((ref) {
   return CurrentCategoryNotifier();
+});
+
+class CategoryContentNotifier extends StateNotifier<List<Note>> {
+  CategoryContentNotifier() : super([]);
+
+  void loadContent(
+      List<Note> notesList, List<Category> catList, int catIndexList) {
+    state = [];
+    List<Note> helpCatNoteList = [];
+    if (catIndexList != 0 &&
+        catIndexList < catList.length &&
+        catList[catIndexList - 1].notesList != null) {
+      for (var catNote in catList[catIndexList - 1].notesList!) {
+        helpCatNoteList =
+            notesList.where((note) => note.id == catNote).toList();
+
+        state = [...helpCatNoteList, ...state];
+      }
+    }
+  }
+}
+
+final categoryContentProvider =
+    StateNotifierProvider<CategoryContentNotifier, List<Note>>((ref) {
+  return CategoryContentNotifier();
 });

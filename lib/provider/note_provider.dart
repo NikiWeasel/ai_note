@@ -22,7 +22,12 @@ Future<Database> _getDatabase() async {
 
 Future<void> _createDb(Database db) async {
   await db.execute('''
-  CREATE TABLE user_notes (id TEXT PRIMARY KEY, title TEXT, content TEXT, datetime TEXT)''');
+          CREATE TABLE user_notes (
+          id TEXT PRIMARY KEY, 
+          title TEXT, 
+          content TEXT, 
+          datetime TEXT)
+         ''');
   await db.execute('''
           CREATE TABLE categories (
             id TEXT PRIMARY KEY,
@@ -51,7 +56,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
               id: row['id'] as String,
               title: row['title'] as String,
               content: row['content'] as String,
-              dateTime: row['datetime'] as String, //TODO убрать '?'
+              dateTime: row['datetime'] as String,
             ))
         .toList();
     state = notes;

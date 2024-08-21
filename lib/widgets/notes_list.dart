@@ -24,27 +24,6 @@ class _NoteListState extends ConsumerState<NotesList> {
     final isSelectingMode =
         ref.watch(toggleModeProvider); //TODO сделать анимацию тряски
 
-    final notesList = ref.watch(notesProvider);
-
-    // return GridView(
-    //   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-    //     // crossAxisCount: 2,
-    //     childAspectRatio: 2.5 / 2,
-    //     // crossAxisSpacing: 20,
-    //     // mainAxisSpacing: 20,
-    //     maxCrossAxisExtent: 250,
-    //   ),
-    //   children: [
-    //     for (final note in widget.notes)
-    //       Padding(
-    //         padding: const EdgeInsets.all(8.0),
-    //         child: NoteGritItem(
-    //           note: note,
-    //         ),
-    //       )
-    //   ],
-    // );
-
     return widget.notes!.isEmpty
         ? SliverToBoxAdapter(
             child: Column(
@@ -72,7 +51,7 @@ class _NoteListState extends ConsumerState<NotesList> {
                   child: NoteGritItem(note: widget.notes![index]),
                 );
               },
-              childCount: notesList.length,
+              childCount: widget.notes!.length,
             ),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               //TODO поменять (будет плохо выглядить на большом экране)

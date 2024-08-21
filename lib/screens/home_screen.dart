@@ -16,6 +16,7 @@ import 'package:http/http.dart';
 import 'package:ai_note/provider/toggle_mode_provider.dart';
 import 'package:ai_note/widgets/input_widget.dart';
 import 'package:ai_note/models/sliver_appbar_delegate.dart';
+import 'package:ai_note/widgets/choose_category.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -40,6 +41,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       List<Note> selectedNotesList) {
     switch (index) {
       case 0:
+      case 2:
+        showDialog(
+            context: context,
+            builder: (ctx) => ChooseCategory(
+                  selectedNotes: selectedNotesList,
+                ));
       case 3:
         noteFunctions.onDelete(ref, context, selectedNotesList);
     }

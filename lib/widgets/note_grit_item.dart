@@ -98,7 +98,7 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
-                maxLines: 2,
+                maxLines: 4,
                 overflow: TextOverflow.fade,
               ),
             ),

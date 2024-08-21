@@ -59,6 +59,10 @@ class _CategoriesState extends ConsumerState<Categories> {
 
     List<bool> isSelectedList;
     isSelectedList = List.generate(categoriesList.length, (_) => false);
+    if (activeIndex > isSelectedList.length) {
+      activeIndex = 0;
+      // ref.read(categoryIndexProvider.notifier).setCategory(activeIndex);
+    }
     isSelectedList.insert(activeIndex, true);
 
     void addNewCategory() {
@@ -96,6 +100,7 @@ class _CategoriesState extends ConsumerState<Categories> {
 
     void onTap(int index) {
       setState(() {
+        // ref.read(categoryIndexProvider.notifier).setCategory(index);
         activeIndex = index;
       });
     }

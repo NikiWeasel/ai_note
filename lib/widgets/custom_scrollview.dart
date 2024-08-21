@@ -9,42 +9,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ai_note/provider/note_provider.dart';
 import 'package:ai_note/models/note.dart';
 
-class CustomScrollview extends ConsumerWidget {
+class CustomScrollview extends ConsumerStatefulWidget {
   const CustomScrollview({super.key});
 
-  //
-  // Widget content = notesList.isEmpty
-  //     ? NoContent(
-  //   onNewNote: () {
-  //     noteFunctions.onCreate(ref, context);
-  //   },
-  //   onAiChat: () {},
-  // )
-  //     : FutureBuilder(
-  //     future: _notesFuture,
-  //     builder: (ctx, snapshot) =>
-  //     snapshot.connectionState == ConnectionState.waiting
-  //         ? const Center(
-  //       child: CircularProgressIndicator(),
-  //     )
-  //         : Expanded(child: NotesList(notes: notesList)));
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CustomScrollview> createState() => _CustomScrollviewState();
+}
+
+class _CustomScrollviewState extends ConsumerState<CustomScrollview> {
+  @override
+  Widget build(BuildContext context) {
     final notesList = ref.watch(notesProvider);
     final catList = ref.watch(categoriesProvider);
     final catIndexList = ref.watch(categoryIndexProvider);
-
-    List<Note> catNoteList = [];
-    List<Note> helpCatNoteList = [];
-    if (catIndexList < catList.length &&
-        catList[catIndexList].notesList != null) {
-      for (var catNote in catList[catIndexList].notesList!) {
-        helpCatNoteList =
-            notesList.where((note) => note.id == catNote).toList();
-        catNoteList = [...helpCatNoteList, ...catNoteList];
-      }
-    }
+    final catContentList = ref.watch(categoryContentProvider);
 
     return CustomScrollView(
       slivers: [
@@ -67,7 +45,10 @@ class CustomScrollview extends ConsumerWidget {
             child: const Categories(),
           ),
         ),
-        NotesList(notes: catIndexList == 0 ? notesList : catNoteList)
+        NotesList(
+            notes: catIndexList == 0 || catList.length < catIndexList
+                ? notesList
+                : catContentList)
       ],
     );
   }

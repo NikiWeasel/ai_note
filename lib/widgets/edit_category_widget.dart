@@ -58,7 +58,7 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
   @override
   void initState() {
     _controller = TextEditingController();
-    _controller.text = widget.newCategoryText ?? '';
+    _controller.text = widget.newCategoryText ?? widget.category!.name;
     super.initState();
   }
 
@@ -77,7 +77,7 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
             return AlertDialog(
               title: const Text('Warning'),
               content: Text(
-                'Delete category "${widget.newCategoryText}"?',
+                'Delete category "${widget.category!.name}"?',
               ),
               actions: <Widget>[
                 TextButton(

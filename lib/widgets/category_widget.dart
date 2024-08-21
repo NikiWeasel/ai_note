@@ -24,6 +24,10 @@ class CategoryWidget extends ConsumerWidget {
     final categoryNotifier = ref.watch(categoriesProvider.notifier);
     final categoryIndexNotifier = ref.watch(categoryIndexProvider.notifier);
 
+    final notesList = ref.watch(notesProvider);
+    final catList = ref.watch(categoriesProvider);
+    // final catIndexList = ref.watch(categoryIndexProvider);
+
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
       child: InkWell(
@@ -31,6 +35,12 @@ class CategoryWidget extends ConsumerWidget {
         onTap: () {
           onTap(index);
           categoryIndexNotifier.setCategory(index);
+          if (index == 0) {
+            return;
+          }
+          ref
+              .read(categoryContentProvider.notifier)
+              .loadContent(notesList, catList, index);
         },
         onLongPress: () {
           showModalBottomSheet(
