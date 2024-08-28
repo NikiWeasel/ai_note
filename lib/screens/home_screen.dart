@@ -32,7 +32,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _notesFuture = ref.read(notesProvider.notifier).loadNotes();
   }
@@ -52,8 +51,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 3:
         noteFunctions.onDelete(ref, context, selectedNotesList);
     }
-
-    // print("Tapped on index $index");
   }
 
   @override
@@ -64,6 +61,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isSelectingModeNotifier = ref.watch(toggleModeProvider.notifier);
 
     final notesList = ref.watch(notesProvider);
+
+    bool isAllPinned() {
+      final notPinnedNotes =
+          selectedNotesList.where((note) => note.isPinned == false);
+      if (notPinnedNotes.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    }
 
     Widget content = notesList.isEmpty
         ? NoContent(
@@ -125,18 +132,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         bottomNavigationBar: isSelectingMode
             ? BottomNavigationBar(
                 type: BottomNavigationBarType.fixed,
-                items: const [
-                  BottomNavigationBarItem(
+                items: [
+                  const BottomNavigationBarItem(
                     icon: Icon(
                       Icons.arrow_forward,
                     ),
                     label: 'Move',
                   ),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.push_pin_outlined), label: 'Pin'),
-                  BottomNavigationBarItem(
+                  isAllPinned()
+                      ? const BottomNavigationBarItem(
+                          icon: Icon(Icons.push_pin_outlined), label: 'Pin')
+                      : BottomNavigationBarItem(
+                          icon: Transform.rotate(
+                              angle: 30 * 3.14 / 180,
+                              child: const Icon(Icons.push_pin_outlined)),
+                          label: 'Unpin'),
+                  const BottomNavigationBarItem(
                       icon: Icon(Icons.arrow_forward), label: 'Move'),
-                  BottomNavigationBarItem(
+                  const BottomNavigationBarItem(
                       icon: Icon(Icons.delete), label: 'Delete'),
                 ],
                 onTap: selectedNotesList.isNotEmpty

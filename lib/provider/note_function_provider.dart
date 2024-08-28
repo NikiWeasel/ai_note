@@ -75,17 +75,12 @@ void _deleteNote(
 void _togglePin(WidgetRef ref, List<Note> notesToPin) {
   // final pinnedNotes = notesToPin.where((note) => note.isPinned == true);
   final notPinnedNotes = notesToPin.where((note) => note.isPinned == false);
-  print(notPinnedNotes);
 
   if (notPinnedNotes.isNotEmpty) {
-    print('not empty');
-
     for (var note in notesToPin) {
       ref.read(notesProvider.notifier).pinNote(note);
     }
   } else {
-    print('not empty');
-
     for (var note in notesToPin) {
       ref.read(notesProvider.notifier).unpinNote(note);
     }
