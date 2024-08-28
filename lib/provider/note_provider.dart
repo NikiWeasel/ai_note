@@ -49,6 +49,38 @@ Future<void> _createDb(Database db) async {
 class NotesNotifier extends StateNotifier<List<Note>> {
   NotesNotifier() : super([]);
 
+  void sortNotesByDateAndPin(List<Note> notes) {
+    notes.sort((a, b) {
+      // Сначала проверяем, закреплены ли заметки
+      if (a.isPinned && !b.isPinned)
+        return -1; // Если 'a' закреплена, а 'b' нет, 'a' должна быть впереди
+      if (!a.isPinned && b.isPinned)
+        return 1; // Если 'b' закреплена, а 'a' нет, 'b' должна быть впереди
+
+      // Если обе заметки либо закреплены, либо не закреплены, сортируем по дате
+      DateTime dateA = _parseDateTime(a.dateTime);
+      DateTime dateB = _parseDateTime(b.dateTime);
+      return dateB.compareTo(dateA); // Сортировка от самых новых к самым старым
+    });
+  }
+
+  DateTime _parseDateTime(String dateTime) {
+    final parts = dateTime.split(' ');
+    final timePart = parts[0];
+    final datePart = parts[1];
+
+    final timeParts = timePart.split(':');
+    final dateParts = datePart.split('/');
+
+    return DateTime(
+      int.parse(dateParts[2]), // Год
+      int.parse(dateParts[1]), // Месяц
+      int.parse(dateParts[0]), // День
+      int.parse(timeParts[0]), // Часы
+      int.parse(timeParts[1]), // Минуты
+    );
+  }
+
   Future<void> loadNotes() async {
     final db = await _getDatabase();
     final data = await db.query('user_notes', orderBy: 'ispinned DESC');
@@ -62,6 +94,8 @@ class NotesNotifier extends StateNotifier<List<Note>> {
             ))
         .toList();
     state = notes;
+
+    sortNotesByDateAndPin(state);
   }
 
   void addNote(String title, String content) async {
@@ -96,7 +130,6 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     db.update(
         'user_notes',
         {
-          // 'id': editedNote.id,
           'title': newNote.title,
           'content': newNote.content,
           'datetime': newNote.dateTime
@@ -106,6 +139,8 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     state = state.where((m) => m.id != oldNote.id).toList();
 
     state = [newNote, ...state];
+
+    // sortNotesByDate(state);
   }
 
   void deleteNote(Note noteToDelete) async {
