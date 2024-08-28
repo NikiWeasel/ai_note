@@ -7,6 +7,9 @@ import 'package:ai_note/models/category.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
+import 'package:ai_note/provider/selected_notes_provider.dart';
+import 'package:ai_note/provider/toggle_mode_provider.dart';
+
 class ChooseCategory extends ConsumerWidget {
   const ChooseCategory({super.key, required this.selectedNotes});
 
@@ -28,12 +31,29 @@ class ChooseCategory extends ConsumerWidget {
                   message: 'Note is already in this category'));
         }
       }
+      ref.read(toggleModeProvider.notifier).toggleSelectingMode();
+      ref.read(selectedNotesProvider.notifier).clearNoteSelection();
+    }
+
+    void deleteAllLinks() async {
+      for (var note in selectedNotes) {
+        catListNotifier.deleteAllNoteLinks(note);
+        ref.read(categoriesProvider.notifier).loadCategories();
+        // if (!isAvailable) {
+        //   showTopSnackBar(
+        //       Overlay.of(context),
+        //       const CustomSnackBar.info(
+        //           message: 'Note is already in this category'));
+        // }
+      }
+      ref.read(toggleModeProvider.notifier).toggleSelectingMode();
+      ref.read(selectedNotesProvider.notifier).clearNoteSelection();
     }
 
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        height: 350,
+        height: MediaQuery.of(context).size.height * 0.55,
         padding: const EdgeInsets.only(left: 8, right: 8),
         // margin: EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
@@ -46,8 +66,11 @@ class ChooseCategory extends ConsumerWidget {
             Text(
               'Move selected notes to:',
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                  fontSize: 20,
+                  fontSize: 25,
                   color: Theme.of(context).colorScheme.onSecondary),
+            ),
+            const SizedBox(
+              height: 8,
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -59,12 +82,24 @@ class ChooseCategory extends ConsumerWidget {
                           leading: const Icon(Icons.folder_copy_outlined),
                           title: Text(cat.name),
                           onTap: () {
-                            print(cat);
                             addNoteToCat(cat);
-                            Navigator.of(context).pop;
+                            Navigator.of(context).pop();
                           },
                         ),
-                      )
+                      ),
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.folder_copy_outlined),
+                        title: const Text('Delete all links'),
+                        onTap: () {
+                          deleteAllLinks();
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 8,
+                    )
                   ],
                 ),
               ),

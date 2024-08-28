@@ -144,7 +144,6 @@ class NotesNotifier extends StateNotifier<List<Note>> {
   }
 
   void deleteNote(Note noteToDelete) async {
-    // final appDir = await syspath.getApplicationDocumentsDirectory();
     final db = await _getDatabase();
 
     db.delete('user_notes', where: 'id = \'${noteToDelete.id}\'');
