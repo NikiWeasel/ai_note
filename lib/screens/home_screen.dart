@@ -41,6 +41,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       List<Note> selectedNotesList) {
     switch (index) {
       case 0:
+      case 1:
+        noteFunctions.onTogglePin(ref, selectedNotesList);
       case 2:
         showDialog(
             context: context,
@@ -131,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     label: 'Move',
                   ),
                   BottomNavigationBarItem(
-                      icon: Icon(Icons.arrow_upward_outlined), label: 'Pin'),
+                      icon: Icon(Icons.push_pin_outlined), label: 'Pin'),
                   BottomNavigationBarItem(
                       icon: Icon(Icons.arrow_forward), label: 'Move'),
                   BottomNavigationBarItem(

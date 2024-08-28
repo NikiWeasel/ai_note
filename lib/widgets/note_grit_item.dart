@@ -102,12 +102,20 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
                 overflow: TextOverflow.fade,
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (isSelectingMode) checkedWidget,
-                Spacer(),
+                const Spacer(),
+                widget.note.isPinned == true
+                    ? Transform.rotate(
+                        angle: 30 * 3.14 / 180,
+                        child: const Icon(
+                          Icons.push_pin_outlined,
+                          size: 18,
+                        ))
+                    : SizedBox.shrink(),
                 Text(
                   widget.note.dateTime.toString(),
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(

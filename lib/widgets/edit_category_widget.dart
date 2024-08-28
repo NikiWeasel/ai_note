@@ -121,11 +121,12 @@ class _EditCategoryWidgetState extends State<EditCategoryWidget> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
             ),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             TextField(
               controller: _controller,
+              autofocus: true,
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Row(
               // mainAxisAlignment: MainAxisAlignment.end,
               children: [

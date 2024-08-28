@@ -24,6 +24,7 @@ Future<void> _createDb(Database db) async {
   await db.execute('''
           CREATE TABLE user_notes (
           id TEXT PRIMARY KEY, 
+          ispinned INTEGER,
           title TEXT, 
           content TEXT, 
           datetime TEXT)
@@ -50,10 +51,11 @@ class NotesNotifier extends StateNotifier<List<Note>> {
 
   Future<void> loadNotes() async {
     final db = await _getDatabase();
-    final data = await db.query('user_notes');
+    final data = await db.query('user_notes', orderBy: 'ispinned DESC');
     final notes = data
         .map((row) => Note(
               id: row['id'] as String,
+              isPinned: row['ispinned'] as int == 1 ? true : false,
               title: row['title'] as String,
               content: row['content'] as String,
               dateTime: row['datetime'] as String,
@@ -76,6 +78,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
 
     db.insert('user_notes', {
       'id': newNote.id,
+      'ispinned': newNote.isPinned == true ? 1 : 0,
       'title': newNote.title,
       'content': newNote.content,
       'datetime': newNote.dateTime,
@@ -112,6 +115,59 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     db.delete('user_notes', where: 'id = \'${noteToDelete.id}\'');
 
     state = state.where((m) => m.id != noteToDelete.id).toList();
+  }
+
+  void pinNote(Note noteToPin) async {
+    // final appDir = await syspath.getApplicationDocumentsDirectory();
+    final db = await _getDatabase();
+
+    if (noteToPin.isPinned == true) {
+      return;
+    }
+    db.update(
+        'user_notes',
+        {
+          'ispinned': 1,
+        },
+        where: 'id = \'${noteToPin.id}\'');
+
+    final newNote = Note(
+        title: noteToPin.title,
+        content: noteToPin.content,
+        id: noteToPin.id,
+        dateTime: noteToPin.dateTime,
+        isPinned: true);
+
+    state = state.where((m) => m.id != noteToPin.id).toList();
+
+    state = [newNote, ...state];
+  }
+
+  void unpinNote(Note noteToUnpin) async {
+    // final appDir = await syspath.getApplicationDocumentsDirectory();
+    final db = await _getDatabase();
+
+    if (noteToUnpin.isPinned == false) {
+      return;
+    }
+    db.update(
+        'user_notes',
+        {
+          'ispinned': 0,
+        },
+        where: 'id = \'${noteToUnpin.id}\'');
+
+    final newNote = Note(
+        title: noteToUnpin.title,
+        content: noteToUnpin.content,
+        id: noteToUnpin.id,
+        dateTime: noteToUnpin.dateTime,
+        isPinned: false);
+
+    state = state.where((m) => m.id != noteToUnpin.id).toList();
+
+    // print(noteToUnpin.isPinned);
+    state = [newNote, ...state];
   }
 }
 

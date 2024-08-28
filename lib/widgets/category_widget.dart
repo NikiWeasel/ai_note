@@ -76,10 +76,18 @@ class CategoryWidget extends ConsumerWidget {
                       .withOpacity(0.8) //TODO поменять цвет выбранного
                   : Colors.black54,
               borderRadius: BorderRadius.circular(16)),
-          child: Text(
-            category?.name ?? 'All',
-            style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                color: Theme.of(context).colorScheme.onSecondary, fontSize: 16),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 100,
+            ),
+            child: Text(
+              category?.name ?? 'All',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                  color: Theme.of(context).colorScheme.onSecondary,
+                  fontSize: 16),
+            ),
           ),
         ),
       ),
