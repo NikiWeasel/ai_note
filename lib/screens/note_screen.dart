@@ -35,7 +35,7 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
   final GlobalKey _widgetKey = GlobalKey();
   double _widgetHeight = 0.0;
 
-  String description = 'My great package';
+  // String description = 'My great package';
 
   void _getWidgetHeight() {
     final RenderBox renderBox =

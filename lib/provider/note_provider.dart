@@ -118,14 +118,23 @@ class NotesNotifier extends StateNotifier<List<Note>> {
       'datetime': newNote.dateTime,
     });
 
-    state = [newNote, ...state];
+    List<Note> pinnedNotes =
+        state.where((note) => note.isPinned == true).toList();
+    state = state.where((m) => m.isPinned == false).toList();
+
+    state = [...pinnedNotes, newNote, ...state];
+    // state = [newNote, ...state];
   }
 
   void editNote(Note oldNote, String newTitle, String newContent) async {
     // final appDir = await syspath.getApplicationDocumentsDirectory();
     final db = await _getDatabase();
 
-    final newNote = Note(title: newTitle, content: newContent, id: oldNote.id);
+    final newNote = Note(
+        title: newTitle,
+        content: newContent,
+        id: oldNote.id,
+        isPinned: oldNote.isPinned);
 
     db.update(
         'user_notes',
@@ -136,9 +145,15 @@ class NotesNotifier extends StateNotifier<List<Note>> {
         },
         where: 'id = \'${oldNote.id}\'');
 
+    List<Note> pinnedNotes = state
+        .where((note) => note.isPinned == true && note.id != oldNote.id)
+        .toList();
     state = state.where((m) => m.id != oldNote.id).toList();
+    state = state.where((m) => m.isPinned == false).toList();
 
-    state = [newNote, ...state];
+    state = newNote.isPinned
+        ? [newNote, ...pinnedNotes, ...state]
+        : [...pinnedNotes, newNote, ...state];
 
     // sortNotesByDate(state);
   }
