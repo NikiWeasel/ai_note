@@ -24,11 +24,15 @@ class _CustomScrollviewState extends ConsumerState<CustomScrollview> {
     final catIndexList = ref.watch(categoryIndexProvider);
     final catContentList = ref.watch(categoryContentProvider);
 
+    // ref
+    //     .read(categoryContentProvider.notifier)
+    //     .loadContent(notesList, catList, catIndexList);
+
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.only(top: 8.0, left: 8, right: 8),
+            padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
             child: InputWidget(
                 onPressed: (text) {},
                 icon: const Icon(

@@ -1,29 +1,32 @@
+import 'package:ai_note/widgets/cat_tags_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-
-// import 'package:markdown_editor_plus/markdown_editor_plus.dart' as mdplus;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markdown_toolbar/markdown_toolbar.dart';
-
 import 'package:ai_note/models/note.dart';
-// import 'markdown_editor_controller.dart';
+import 'package:ai_note/provider/note_provider.dart';
 
-class NoteScreen extends StatefulWidget {
-  NoteScreen({super.key, required this.note});
+import 'package:ai_note/models/category.dart';
+
+class NoteScreen extends ConsumerStatefulWidget {
+  const NoteScreen({super.key, required this.note});
 
   final Note note;
 
   // void Function() onSelected;
 
   @override
-  State<NoteScreen> createState() {
+  ConsumerState<NoteScreen> createState() {
     return _NoteScreenState();
   }
 }
 
-class _NoteScreenState extends State<NoteScreen> {
+class _NoteScreenState extends ConsumerState<NoteScreen> {
   TextEditingController _contentController = TextEditingController();
   TextEditingController _titleController = TextEditingController();
+  List<Category> catList = [];
 
   // String _markdownData = '';
   var _focusNode = FocusNode();
@@ -52,6 +55,19 @@ class _NoteScreenState extends State<NoteScreen> {
     _getWidgetHeight();
   }
 
+  void setCatList(List<Category> allCatList) {
+    catList = [];
+
+    for (var category in allCatList) {
+      var notesList = category.notesList ?? [];
+
+      if (notesList.contains(widget.note.id)) {
+        catList.add(category);
+      }
+    }
+    // print('');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -70,6 +86,15 @@ class _NoteScreenState extends State<NoteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final categoriesList = ref.watch(categoriesProvider);
+    final categoriesNotifier = ref.watch(categoriesProvider.notifier);
+
+    setCatList(categoriesList);
+    categoriesNotifier.loadCategories();
+
+    // categoriesList.where((cat) =>
+    //     cat.notesList.where((noteid) => noteid == widget.note.id).isNotEmpty);
+
     return Scaffold(
       appBar: AppBar(
         title: TextField(
@@ -79,14 +104,14 @@ class _NoteScreenState extends State<NoteScreen> {
               ),
           decoration: const InputDecoration(
             border: InputBorder.none,
-            hintText: "Title",
+            hintText: 'Title',
           ),
         ),
         actions: [
           IconButton(
               onPressed: () {
                 _changeMode();
-                print(_widgetHeight);
+                // print(_widgetHeight);
               },
               icon: isEditing ? const Icon(Icons.done) : const Icon(Icons.edit))
         ],
@@ -104,14 +129,43 @@ class _NoteScreenState extends State<NoteScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0, right: 8),
+              child: SingleChildScrollView(
+                child: Column(
+                    // crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            for (var cat in catList)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: CatTagsWidget(
+                                  category: cat,
+                                  deleteCat: (cat, note) {
+                                    setState(() {
+                                      print('pressed');
+                                      categoriesNotifier.deleteCatNoteLinks(
+                                          cat, note);
+                                    });
+                                  },
+                                  note: widget.note,
+                                ),
+                              ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0, right: 8),
+                        child: Align(
+                          alignment: Alignment.bottomRight,
                           child: Text(
                             'Last edit: ${widget.note.dateTime}',
                             style: Theme.of(context)
@@ -123,12 +177,15 @@ class _NoteScreenState extends State<NoteScreen> {
                                         .onSurface),
                           ),
                         ),
-                        Container(
-                          width: double.infinity,
-                          height: 1,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                        isEditing
+                      ),
+                      Container(
+                        width: double.infinity,
+                        height: 1,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                        child: isEditing
                             ? SizedBox(
                                 height: 500,
                                 child: TextField(
@@ -160,8 +217,8 @@ class _NoteScreenState extends State<NoteScreen> {
                                   ),
                                 ),
                               ),
-                      ]),
-                ),
+                      ),
+                    ]),
               ),
             ),
             SingleChildScrollView(

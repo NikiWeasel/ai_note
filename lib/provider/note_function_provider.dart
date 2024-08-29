@@ -21,6 +21,7 @@ void _editNote(WidgetRef ref, BuildContext context, Note oldNote) async {
   Note editedNote = await Navigator.of(context).push(MaterialPageRoute(
       builder: (ctx) => NoteScreen(
           note: Note(
+              id: oldNote.id,
               title: oldNote.title,
               content: oldNote.content,
               isPinned: oldNote.isPinned))));

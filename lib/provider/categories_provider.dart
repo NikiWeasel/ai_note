@@ -179,6 +179,15 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
       where: 'note_id = \'${note.id}\'',
     );
   }
+
+  Future<void> deleteCatNoteLinks(Category cat, Note note) async {
+    final db = await _getDatabase();
+
+    await db.delete(
+      'category_notes',
+      where: 'note_id = \'${note.id}\' AND category_id = \'${cat.id}\'',
+    );
+  }
 }
 
 final categoriesProvider =
