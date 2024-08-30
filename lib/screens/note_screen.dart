@@ -121,96 +121,91 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
                   .toDelta()
                   .toJson()))); //TODO plaintext -> json idk
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: CatRowNotesScreen(
-                            catList: catList,
-                            note: widget.note,
-                          )),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0, right: 8),
-                        child: Align(
-                          alignment: Alignment.bottomRight,
-                          child: Text(
-                            'Last edit: ${widget.note.dateTime}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
-                                .copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface),
+        child: OverlayBoundary(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: CatRowNotesScreen(
+                              catList: catList,
+                              note: widget.note,
+                            )),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0, right: 8),
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: Text(
+                              'Last edit: ${widget.note.dateTime}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
+                            ),
                           ),
                         ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        height: 1,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      Padding(
-                          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: minHeight,
-                            ),
+                        Container(
+                          width: double.infinity,
+                          height: 1,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        // quill.QuillEditor.basic(
+                        //   controller: _contentController,
+                        //   focusNode: _focusNode,
+                        // readOnly: false,
+                        // ),
+                        Padding(
+                            padding:
+                                const EdgeInsets.only(left: 8.0, right: 8.0),
                             child: Padding(
                               padding: const EdgeInsets.only(top: 8),
                               child: Expanded(
-                                child: Column(
-                                  children: [
-                                    quill.QuillEditor.basic(
-                                      controller: _contentController,
-                                      focusNode: _focusNode,
-                                      // readOnly: false,
-                                    ),
-                                  ],
+                                child: quill.QuillEditor.basic(
+                                  controller: _contentController,
+                                  focusNode: _focusNode,
+                                  // readOnly: false,
                                 ),
                               ),
-                            ),
-                          )),
-                    ]),
+                            )),
+                      ]),
+                ),
               ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  quill.QuillToolbar.simple(
-                      controller: _contentController,
-                      configurations:
-                          const quill.QuillSimpleToolbarConfigurations(
-                        showSubscript: false,
-                        showSuperscript: false,
-                        showClearFormat: false,
-                        showClipboardCopy: false,
-                        showClipboardPaste: false,
-                        showClipboardCut: false,
-                        showFontSize: true,
-                        showHeaderStyle: true,
-                        fontSizesValues: const {
-                          'Small': '8',
-                          'Medium': '24.5',
-                          'Large': '46'
-                        },
-                      )),
-                ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    quill.QuillToolbar.simple(
+                        controller: _contentController,
+                        configurations:
+                            const quill.QuillSimpleToolbarConfigurations(
+                          showSubscript: false,
+                          showSuperscript: false,
+                          showClearFormat: false,
+                          showClipboardCopy: false,
+                          showClipboardPaste: false,
+                          showClipboardCut: false,
+                          showFontSize: true,
+                          showHeaderStyle: true,
+                          fontSizesValues: const {
+                            'Small': '8',
+                            'Medium': '24.5',
+                            'Large': '46'
+                          },
+                        )),
+                  ],
+                ),
               ),
-            ),
-            // SizedBox(
-            //   //TODO убрать
-            //   height: 30,
-            // )
-          ],
+            ],
+          ),
         ),
       ),
     );
