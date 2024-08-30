@@ -469,6 +469,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+  quill_delta:
+    dependency: "direct main"
+    description:
+      name: quill_delta
+      sha256: a91c0e5354b32b5344d2514580dc6f453abe2723da92439019aa728da64d8350
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-nullsafety.2"
   quiver:
     dependency: transitive
     description:

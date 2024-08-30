@@ -1,14 +1,18 @@
+import 'dart:convert';
+import 'package:ai_note/widgets/cat_row_notes_screen.dart';
 import 'package:ai_note/widgets/cat_tags_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markdown_toolbar/markdown_toolbar.dart';
 import 'package:ai_note/models/note.dart';
 import 'package:ai_note/provider/note_provider.dart';
-
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:ai_note/models/category.dart';
+import 'package:ai_note/widgets/overlay_boundary.dart';
 
 class NoteScreen extends ConsumerStatefulWidget {
   const NoteScreen({super.key, required this.note});
@@ -24,35 +28,18 @@ class NoteScreen extends ConsumerStatefulWidget {
 }
 
 class _NoteScreenState extends ConsumerState<NoteScreen> {
-  TextEditingController _contentController = TextEditingController();
-  TextEditingController _titleController = TextEditingController();
+  final quill.QuillController _contentController =
+      quill.QuillController.basic();
+  final TextEditingController _titleController = TextEditingController();
   List<Category> catList = [];
 
-  // String _markdownData = '';
-  var _focusNode = FocusNode();
+  final _focusNode = FocusNode();
   bool isEditing = true;
-
-  final GlobalKey _widgetKey = GlobalKey();
-  double _widgetHeight = 0.0;
-
-  // String description = 'My great package';
-
-  void _getWidgetHeight() {
-    final RenderBox renderBox =
-        _widgetKey.currentContext?.findRenderObject() as RenderBox;
-    final height = renderBox.size.height;
-    setState(() {
-      _widgetHeight = height;
-    });
-  }
-
-  // _saveNote() {}
 
   _changeMode() {
     setState(() {
       isEditing = !isEditing;
     });
-    _getWidgetHeight();
   }
 
   void setCatList(List<Category> allCatList) {
@@ -65,14 +52,20 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
         catList.add(category);
       }
     }
-    // print('');
   }
 
   @override
   void initState() {
     super.initState();
-    _contentController.text = widget.note.content;
+    // _contentController.text = widget.note.content;
     _titleController.text = widget.note.title;
+
+    //////////////////
+    if (widget.note.content.isNotEmpty) {
+      final json = jsonDecode(widget.note.content);
+
+      _contentController.document = Document.fromJson(json);
+    }
   }
 
   @override
@@ -92,8 +85,10 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
     setCatList(categoriesList);
     categoriesNotifier.loadCategories();
 
-    // categoriesList.where((cat) =>
-    //     cat.notesList.where((noteid) => noteid == widget.note.id).isNotEmpty);
+    double minHeight = MediaQuery.of(context).size.height -
+        2 * MediaQuery.of(context).viewInsets.bottom; //TODO исправить хз как
+    // print(MediaQuery.of(context).size.height -
+    //     MediaQuery.of(context).viewInsets.bottom);
 
     return Scaffold(
       appBar: AppBar(
@@ -116,13 +111,15 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
               icon: isEditing ? const Icon(Icons.done) : const Icon(Icons.edit))
         ],
       ),
-      // drawer: ...,
       body: PopScope(
         canPop: false,
         onPopInvoked: (bool didPop) {
           if (didPop) return;
           Navigator.of(context).pop(Note(
-              title: _titleController.text, content: _contentController.text));
+              title: _titleController.text,
+              content: jsonEncode(_contentController.document
+                  .toDelta()
+                  .toJson()))); //TODO plaintext -> json idk
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -131,37 +128,14 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
-                    // crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            for (var cat in catList)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: CatTagsWidget(
-                                  category: cat,
-                                  deleteCat: (cat, note) {
-                                    setState(() {
-                                      print('pressed');
-                                      categoriesNotifier.deleteCatNoteLinks(
-                                          cat, note);
-                                    });
-                                  },
-                                  note: widget.note,
-                                ),
-                              ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                          ],
-                        ),
-                      ),
+                          scrollDirection: Axis.horizontal,
+                          child: CatRowNotesScreen(
+                            catList: catList,
+                            note: widget.note,
+                          )),
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0, right: 8),
                         child: Align(
@@ -184,54 +158,58 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                        child: isEditing
-                            ? SizedBox(
-                                height: 500,
-                                child: TextField(
-                                  key: _widgetKey,
-                                  keyboardType: TextInputType.multiline,
-                                  maxLines: null,
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: "Enter Markdown text…",
-                                  ),
-                                  controller: _contentController,
-                                  focusNode: _focusNode,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(),
-                                ),
-                              )
-                            : Align(
-                                alignment: Alignment.topLeft,
-                                child: SizedBox(
-                                  height: _widgetHeight + 100,
-                                  child: InkWell(
-                                    onDoubleTap: _changeMode,
-                                    splashColor: Colors.transparent,
-                                    child: Markdown(
-                                        // controller: _controller,
-                                        data: _contentController.text),
-                                  ),
+                          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: minHeight,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Expanded(
+                                child: Column(
+                                  children: [
+                                    quill.QuillEditor.basic(
+                                      controller: _contentController,
+                                      focusNode: _focusNode,
+                                      // readOnly: false,
+                                    ),
+                                  ],
                                 ),
                               ),
-                      ),
+                            ),
+                          )),
                     ]),
               ),
             ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: MarkdownToolbar(
-                // If you set useIncludedTextField to true, remove
-                // a) the controller and focusNode fields below and
-                // b) the TextField outside below widget
-                useIncludedTextField: false,
-                controller: _contentController,
-                focusNode: _focusNode,
+              child: Row(
+                children: [
+                  quill.QuillToolbar.simple(
+                      controller: _contentController,
+                      configurations:
+                          const quill.QuillSimpleToolbarConfigurations(
+                        showSubscript: false,
+                        showSuperscript: false,
+                        showClearFormat: false,
+                        showClipboardCopy: false,
+                        showClipboardPaste: false,
+                        showClipboardCut: false,
+                        showFontSize: true,
+                        showHeaderStyle: true,
+                        fontSizesValues: const {
+                          'Small': '8',
+                          'Medium': '24.5',
+                          'Large': '46'
+                        },
+                      )),
+                ],
               ),
-            )
+            ),
+            // SizedBox(
+            //   //TODO убрать
+            //   height: 30,
+            // )
           ],
         ),
       ),

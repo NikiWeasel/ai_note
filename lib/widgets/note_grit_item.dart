@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:ai_note/provider/selected_notes_provider.dart';
 import 'package:ai_note/provider/toggle_mode_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ai_note/models/note.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ai_note/provider/note_function_provider.dart';
@@ -40,6 +43,10 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
     if (matchingNotes.isNotEmpty) {
       isSelected = true;
     }
+
+    var jsonDex = jsonDecode(widget.note.content);
+    var contentDoc = Document.fromJson(jsonDex);
+    // print(jsonDex.toString() + ' ' + ff.toPlainText());
 
     void checkItem() {
       selectedNotes.toggleNoteSelection(widget.note);
@@ -94,7 +101,7 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
             Align(
               alignment: Alignment.topLeft,
               child: Text(
-                widget.note.content,
+                contentDoc.toPlainText(),
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                     ),

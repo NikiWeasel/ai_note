@@ -99,10 +99,6 @@ class NotesNotifier extends StateNotifier<List<Note>> {
   }
 
   void addNote(String title, String content) async {
-    // final appDir = await syspath.getApplicationDocumentsDirectory();
-    // final filename = path.basename(image.path);
-    // final copiedImage = await image.copy('${appDir.path}/$filename');
-
     final newNote = Note(
       title: title,
       content: content,
