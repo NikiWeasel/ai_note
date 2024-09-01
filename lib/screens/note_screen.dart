@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:ai_note/widgets/cat_row_notes_screen.dart';
 import 'package:ai_note/widgets/cat_tags_widget.dart';
+import 'package:ai_note/widgets/quil_toolbar/quill_custom_toolbar.dart';
+import 'package:ai_note/widgets/quil_toolbar/quill_toolbar_font.dart';
+import 'package:ai_note/widgets/quil_toolbar/quill_toolbar_other.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,6 +16,8 @@ import 'package:ai_note/provider/note_provider.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:ai_note/models/category.dart';
 import 'package:ai_note/widgets/overlay_boundary.dart';
+
+import 'package:ai_note/widgets/quil_toolbar/quill_toolbar_formatting.dart';
 
 class NoteScreen extends ConsumerStatefulWidget {
   const NoteScreen({super.key, required this.note});
@@ -89,6 +94,8 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
         2 * MediaQuery.of(context).viewInsets.bottom; //TODO исправить хз как
     // print(MediaQuery.of(context).size.height -
     //     MediaQuery.of(context).viewInsets.bottom);
+    bool hasUndo = _contentController.hasUndo;
+    bool hasRedo = _contentController.hasRedo;
 
     return Scaffold(
       appBar: AppBar(
@@ -103,6 +110,38 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: hasUndo
+                ? const Icon(Icons.undo)
+                : Icon(
+                    Icons.undo,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.2),
+                  ),
+            onPressed: hasUndo
+                ? () {
+                    _contentController.undo();
+                  }
+                : null,
+          ),
+          IconButton(
+            icon: hasRedo
+                ? const Icon(Icons.redo)
+                : Icon(
+                    Icons.redo,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.2),
+                  ),
+            onPressed: _contentController.hasRedo
+                ? () {
+                    _contentController.redo();
+                  }
+                : null,
+          ),
           IconButton(
               onPressed: () {
                 _changeMode();
@@ -124,7 +163,7 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
         child: OverlayBoundary(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: SingleChildScrollView(
@@ -158,17 +197,15 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
                           height: 1,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
-                        // quill.QuillEditor.basic(
-                        //   controller: _contentController,
-                        //   focusNode: _focusNode,
-                        // readOnly: false,
-                        // ),
                         Padding(
                             padding:
                                 const EdgeInsets.only(left: 8.0, right: 8.0),
                             child: Padding(
                               padding: const EdgeInsets.only(top: 8),
-                              child: Expanded(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: minHeight,
+                                ),
                                 child: quill.QuillEditor.basic(
                                   controller: _contentController,
                                   focusNode: _focusNode,
@@ -182,25 +219,13 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    quill.QuillToolbar.simple(
-                        controller: _contentController,
-                        configurations:
-                            const quill.QuillSimpleToolbarConfigurations(
-                          showSubscript: false,
-                          showSuperscript: false,
-                          showClearFormat: false,
-                          showClipboardCopy: false,
-                          showClipboardPaste: false,
-                          showClipboardCut: false,
-                          showFontSize: true,
-                          showHeaderStyle: true,
-                          fontSizesValues: const {
-                            'Small': '8',
-                            'Medium': '24.5',
-                            'Large': '46'
-                          },
-                        )),
+                    // QuillToolbarFont(contentController: _contentController),
+                    // QuillToolbarFormatting(
+                    //     contentController: _contentController),
+                    // QuillToolbarOther(contentController: _contentController),
+                    QuillCustomToolbar(contentController: _contentController),
                   ],
                 ),
               ),
