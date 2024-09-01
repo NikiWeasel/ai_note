@@ -30,17 +30,10 @@ class _QuillToolbarFormattingState extends State<QuillToolbarFormatting> {
             onPressed: () {
               if (!widget.isExpanded) {
                 widget.changeToolbarShown('formatting');
-                print('format');
               } else {
                 widget.changeToolbarShown('all');
-                print('all');
               }
-              setState(() {
-                // print(isExpanded);
-                // print(isExpanded);
-                // isExpanded = !isExpanded;
-                widget.toggle();
-              });
+              widget.toggle();
             },
             icon: widget.isExpanded
                 ? const Icon(Icons.arrow_back_ios_new_outlined)
