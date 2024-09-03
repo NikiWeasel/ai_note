@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:ai_note/widgets/cat_row_notes_screen.dart';
 import 'package:ai_note/widgets/cat_tags_widget.dart';
 import 'package:ai_note/widgets/quil_toolbar/quill_custom_toolbar.dart';
@@ -10,14 +11,19 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:markdown_toolbar/markdown_toolbar.dart';
 import 'package:ai_note/models/note.dart';
 import 'package:ai_note/provider/note_provider.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:ai_note/models/category.dart';
 import 'package:ai_note/widgets/overlay_boundary.dart';
+import 'package:ai_note/models/request_sender.dart';
 
 import 'package:ai_note/widgets/quil_toolbar/quill_toolbar_formatting.dart';
+import 'package:path/path.dart';
+
+import 'package:ai_note/models/image_embed/image_embed_builder.dart';
 
 class NoteScreen extends ConsumerStatefulWidget {
   const NoteScreen({super.key, required this.note});
@@ -36,15 +42,43 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
   final quill.QuillController _contentController =
       quill.QuillController.basic();
   final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _dialogController = TextEditingController();
+
   List<Category> catList = [];
 
   final _focusNode = FocusNode();
-  bool isEditing = true;
 
-  _changeMode() {
-    setState(() {
-      isEditing = !isEditing;
-    });
+  RequestSender requestSender = RequestSender();
+
+  // bool isEditing = true;
+
+  Future<String> generateText(String input) async {
+    requestSender.setAccessToken();
+    return await requestSender.sendRequest(input) ?? '';
+  }
+
+  void _textGeneratingDialog(String input, BuildContext context) {
+    _dialogController.text = input ?? '';
+
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            content: TextField(
+              controller: _dialogController,
+              maxLines: 8,
+            ),
+            actions: [
+              TextButton(
+                  onPressed: _dialogController.text != ''
+                      ? () {
+                          generateText(_dialogController.text);
+                        }
+                      : null,
+                  child: const Text('Generate'))
+            ],
+          );
+        });
   }
 
   void setCatList(List<Category> allCatList) {
@@ -144,10 +178,9 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
           ),
           IconButton(
               onPressed: () {
-                _changeMode();
-                // print(_widgetHeight);
+                _textGeneratingDialog('input', context);
               },
-              icon: isEditing ? const Icon(Icons.done) : const Icon(Icons.edit))
+              icon: const Icon(Icons.add_comment))
         ],
       ),
       body: PopScope(
@@ -209,7 +242,13 @@ class _NoteScreenState extends ConsumerState<NoteScreen> {
                                 child: quill.QuillEditor.basic(
                                   controller: _contentController,
                                   focusNode: _focusNode,
+                                  // scrollController: ScrollController(),
                                   // readOnly: false,
+                                  configurations: QuillEditorConfigurations(
+                                      // showCursor: false,
+                                      embedBuilders: [
+                                        ImageEmbedBuilder(),
+                                      ]),
                                 ),
                               ),
                             )),
