@@ -4,6 +4,7 @@ import 'package:ai_note/provider/note_provider.dart';
 import 'package:ai_note/provider/selected_notes_provider.dart';
 import 'package:ai_note/screens/chat_screen.dart';
 import 'package:ai_note/screens/note_screen.dart';
+import 'package:ai_note/screens/settings_screen.dart';
 import 'package:ai_note/widgets/ai_chat.dart';
 import 'package:ai_note/widgets/custom_scrollview.dart';
 import 'package:ai_note/widgets/no_content.dart';
@@ -126,7 +127,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Navigator.of(context).push(
                             MaterialPageRoute(builder: (ctx) => ChatScreen()));
                       },
-                      icon: const Icon(Icons.accessible_forward_sharp))
+                      icon: const Icon(Icons.accessible_forward_sharp)),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => SettingsScreen()));
+                      },
+                      icon: const Icon(Icons.settings)),
                 ],
         ),
         bottomNavigationBar: isSelectingMode
