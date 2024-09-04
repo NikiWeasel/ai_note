@@ -46,6 +46,14 @@ class _QuillCustomToolbarState extends State<QuillCustomToolbar> {
     final length = widget.contentController.selection.extentOffset - index;
 
     widget.contentController.replaceText(index, length, block, null);
+
+    // widget.contentController.replaceText(
+    //   widget.contentController.selection.baseOffset + 1,
+    //   0,
+    //   '\n',
+    //   TextSelection.collapsed(
+    //       offset: widget.contentController.selection.baseOffset + 2),
+    // );
   }
 
   Future<String> _uploadImage(File image) async {

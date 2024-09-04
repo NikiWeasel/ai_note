@@ -20,17 +20,25 @@ class ImageEmbedBuilder extends EmbedBuilder {
 
     // Проверяем, является ли путь локальным файлом или URL
     final isLocalFile = !imageUrl.startsWith('http');
-    final index = getEmbedNode(controller, node.offset).offset;
+    // final index = getEmbedNode(controller, node.offset).offset;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: isLocalFile
-          ? Image.file(File(imageUrl))
-          : Image.network(
-              imageUrl,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.broken_image, color: Colors.red);
-              },
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.file(
+                File(imageUrl),
+                fit: BoxFit.fill,
+              ))
+          : ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                imageUrl,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.broken_image, color: Colors.red);
+                },
+              ),
             ),
     );
   }
