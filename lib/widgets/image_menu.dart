@@ -63,17 +63,14 @@ class ImageMenuState extends State<ImageMenu> {
     return InkWell(
       onTap: () {
         index = findImageLineIndex(widget.controller, widget.embed.data);
-        print(widget.embed.isFullSize);
+        // print(widget.embed.isFullSize);
         changeMenuStatus();
+        showModalBottomSheet(
+            context: context,
+            builder: (bb) =>
+                EditingImageMenu(widget.controller, index, widget.embed));
       },
-      child: !isMenuOpened
-          ? widget.child
-          : Stack(children: [
-              widget.child,
-              Positioned(
-                  child:
-                      EditingImageMenu(widget.controller, index, widget.embed))
-            ]),
+      child: widget.child,
     );
   }
 }
@@ -97,39 +94,42 @@ class _EditingImageMenuState extends ConsumerState<EditingImageMenu> {
   Widget build(BuildContext context) {
     final funProv = ref.watch(quillEmbedProvider);
     // print(widget.embed.isFullSize);
-    return Card(
-      child: Row(
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-              onPressed: () {
-                setState(() {
-                  widget.embed.toggleIsFullSize();
-                });
-                print(widget.embed.isFullSize);
-                print(widget.embed.isFullSize);
-              },
-              icon: Icon(Icons.fullscreen_exit)),
-          IconButton(
-              onPressed: () {
-                print(widget.index);
-                funProv.onDelete(widget.contentController, widget.index);
-              },
-              icon: Icon(Icons.delete)),
-          IconButton(
-              onPressed: () {
-                funProv.onMove(widget.contentController, widget.index, false,
-                    widget.embed);
-              },
-              icon: Icon(Icons.arrow_downward_rounded)),
-          IconButton(
-              onPressed: () {
-                print(widget.index);
 
-                funProv.onMove(
-                    widget.contentController, widget.index, true, widget.embed);
-              },
-              icon: Icon(Icons.arrow_upward_rounded)),
+        // mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: Icon(Icons.fullscreen_exit),
+            title: Text('Data'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.fullscreen_exit),
+            title: Text('Data'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.fullscreen_exit),
+            title: Text('Data'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.fullscreen_exit),
+            title: Text('Delete'),
+            onTap: () {
+              Navigator.pop(context);
+              funProv.onDelete(widget.contentController, widget.index);
+            },
+          ),
         ],
       ),
     );

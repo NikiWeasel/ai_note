@@ -1,19 +1,22 @@
 import 'package:flutter_quill/flutter_quill.dart';
 
 class ImageBlockEmbed extends CustomBlockEmbed {
-  bool isFullSize;
+  // bool isFullSize;
 
-  ImageBlockEmbed(String value, {this.isFullSize = false})
-      : super(imageType, value);
+  ImageBlockEmbed(
+    String value,
+  ) : super(imageType, value);
 
   static const String imageType = 'image';
 
   static ImageBlockEmbed fromUrl(String url, {bool isFullSize = false}) =>
-      ImageBlockEmbed(url, isFullSize: isFullSize);
+      ImageBlockEmbed(
+        url,
+      );
 
-  toggleIsFullSize() {
-    isFullSize = !isFullSize;
-  }
+  // toggleIsFullSize() {
+  //   isFullSize = !isFullSize;
+  // }
 
   String get url => data;
 }

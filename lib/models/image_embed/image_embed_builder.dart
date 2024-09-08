@@ -3,7 +3,7 @@ import 'package:ai_note/widgets/image_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:ai_note/models/image_embed/image_block_embed.dart';
-import 'package:ai_note/widgets/draggable_image_widget.dart';
+// import 'package:ai_note/widgets/draggable_image_widget.dart';
 
 class ImageEmbedBuilder extends EmbedBuilder {
   @override
@@ -41,11 +41,9 @@ class ImageEmbedBuilder extends EmbedBuilder {
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Image.file(
-                    width: isFullSize
-                        ? null
-                        : MediaQuery.of(context).size.width / 2,
                     File(imageUrl),
-                    fit: BoxFit.fill,
+                    width: MediaQuery.of(context).size.width / 2,
+                    // fit: BoxFit.fill,
                   )),
             )
           : ClipRRect(
