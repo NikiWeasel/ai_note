@@ -27,8 +27,9 @@ Future<void> _insertImage(
   // final index = widget.contentController.selection.baseOffset;
   // widget.contentController.document.insert(index, image);
 
-  final block = BlockEmbed.custom(ImageBlockEmbed.fromUrl(imageUrl));
   final index = contentController.selection.baseOffset;
+  final block = BlockEmbed.custom(ImageBlockEmbed.fromUrl(imageUrl));
+  // final block = BlockEmbed.image(imageUrl);
   final length = contentController.selection.extentOffset - index;
 
   contentController.replaceText(index, length, block, null);
@@ -38,8 +39,13 @@ void _resizeWidget(QuillController contentController, int index) {
   contentController.document.delete(index, 1);
 }
 
-void _deleteWidget(QuillController contentController, int index) {
+void _deleteEmbed(QuillController contentController, int index) {
   contentController.document.delete(index, 1);
+}
+
+void _moveEmbed(QuillController contentController, int index, bool isUpwards,
+    ImageBlockEmbed embed) {
+  contentController.document.replace(index, 1, embed);
 }
 
 class QuillEmbedProvider {
@@ -47,11 +53,14 @@ class QuillEmbedProvider {
       onInsert;
   final void Function(QuillController contentController, int index) onResize;
   final void Function(QuillController contentController, int index) onDelete;
+  final void Function(QuillController contentController, int index,
+      bool isUpwards, ImageBlockEmbed embed) onMove;
 
   QuillEmbedProvider({
     required this.onInsert,
     required this.onResize,
     required this.onDelete,
+    required this.onMove,
   });
 }
 
@@ -60,6 +69,7 @@ final quillEmbedProvider = Provider<QuillEmbedProvider>((ref) {
   return QuillEmbedProvider(
     onInsert: _insertImage,
     onResize: _resizeWidget,
-    onDelete: _deleteWidget,
+    onDelete: _deleteEmbed,
+    onMove: _moveEmbed,
   );
 });
