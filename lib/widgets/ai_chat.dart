@@ -1,5 +1,5 @@
 import 'package:ai_note/screens/note_screen.dart';
-import 'package:ai_note/widgets/main_drawer.dart';
+import 'package:ai_note/widgets/input_widget.dart';
 import 'package:ai_note/widgets/speech_bubble.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -32,17 +32,18 @@ class _AiChatState extends State<AiChat> {
     });
   }
 
-  get conversationHistory {
-    List<String> msgListReversed = [];
-    for (int i = _msgList.length - 1; i >= 0; i--) {
-      if (_msgList[i].isMe) {
-        msgListReversed.add('User: ${_msgList[i].text}');
-      } else {
-        msgListReversed.add('Bot: ${_msgList[i].text}');
-      }
-    }
-    return msgListReversed;
-  }
+  //
+  // get conversationHistory {
+  //   List<String> msgListReversed = [];
+  //   for (int i = _msgList.length - 1; i >= 0; i--) {
+  //     if (_msgList[i].isMe) {
+  //       msgListReversed.add('User: ${_msgList[i].text}');
+  //     } else {
+  //       msgListReversed.add('Bot: ${_msgList[i].text}');
+  //     }
+  //   }
+  //   return msgListReversed;
+  // }
 
   Future<void> sendRequest(String input) async {
     if (input == '') {
@@ -53,22 +54,32 @@ class _AiChatState extends State<AiChat> {
     //   _msgList.insert(0, Message(text: input, isMe: true));
     // });
 
-    final model = 'EleutherAI/gpt-neo-125m';
-    final url = 'https://api-inference.huggingface.co/models/$model';
+    // final model = 'EleutherAI/gpt-neo-125m';
+    final url = 'https://gigachat.devices.sberbank.ru/api/v1/chat/completions';
     final apiKey =
         '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'; // Замените на ваш API-ключ Hugging Face
 
     final headers = {
-      'Authorization': 'Bearer $apiKey',
-      'Content-Type': 'application/json; charset=UTF-8'
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $apiKey'
     };
 
-    String prompt = conversationHistory.join('\n');
+    // String prompt = conversationHistory.join('\n');
 
     final body = json.encode({
-      'inputs': prompt,
-      'parameters': {'max_length': 2000, 'temperature': 0.7, 'top_p': 0.9}
-      // Замените на ваши данные
+      'model': 'GigaChat',
+      'messages': [
+        {
+          'role': 'user',
+          'content': input,
+        }
+      ],
+      'stream': false,
+      'repetition_penalty': 1,
+
+      // 'inputs': input,
+      // 'parameters': {'max_length': 2000, 'temperature': 0.7, 'top_p': 0.9}
     });
 
     final response = await http.post(
@@ -132,41 +143,11 @@ class _AiChatState extends State<AiChat> {
           right: 0,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(
-              // margin: EdgeInsets.all(0.8),
-              // padding: EdgeInsets.all(0.8),
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(46)),
-                color: Colors.black54,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    top: 8.0, bottom: 8.0, left: 16, right: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: TextField(
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                      ),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge!
-                          .copyWith(color: Colors.white),
-                      controller: _controller,
-                    )),
-                    IconButton(
-                        onPressed: () {
-                          sendRequest(_controller.text);
-                          _controller.clear();
-                        },
-                        icon: Icon(
-                          Icons.send,
-                          color: Colors.white,
-                        ))
-                  ],
-                ),
+            child: InputWidget(
+              onPressed: sendRequest,
+              icon: const Icon(
+                Icons.send,
+                color: Colors.white,
               ),
             ),
           ),

@@ -1,61 +1,110 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:ai_note/widgets/cat_row_notes_screen.dart';
+import 'package:ai_note/widgets/cat_tags_widget.dart';
+import 'package:ai_note/widgets/quil_toolbar/quill_custom_toolbar.dart';
+import 'package:ai_note/widgets/quil_toolbar/quill_toolbar_font.dart';
+import 'package:ai_note/widgets/quil_toolbar/quill_toolbar_other.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-
-// import 'package:markdown_editor_plus/markdown_editor_plus.dart' as mdplus;
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:markdown_toolbar/markdown_toolbar.dart';
-
 import 'package:ai_note/models/note.dart';
-// import 'markdown_editor_controller.dart';
+import 'package:ai_note/provider/note_provider.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:ai_note/models/category.dart';
+import 'package:ai_note/widgets/overlay_boundary.dart';
+import 'package:ai_note/models/request_sender.dart';
 
-class NoteScreen extends StatefulWidget {
-  NoteScreen({super.key, required this.note});
+import 'package:ai_note/widgets/quil_toolbar/quill_toolbar_formatting.dart';
+import 'package:path/path.dart';
+
+import 'package:ai_note/models/image_embed/image_embed_builder.dart';
+
+class NoteScreen extends ConsumerStatefulWidget {
+  const NoteScreen({super.key, required this.note});
 
   final Note note;
 
   // void Function() onSelected;
 
   @override
-  State<NoteScreen> createState() {
+  ConsumerState<NoteScreen> createState() {
     return _NoteScreenState();
   }
 }
 
-class _NoteScreenState extends State<NoteScreen> {
-  TextEditingController _contentController = TextEditingController();
-  TextEditingController _titleController = TextEditingController();
-  String _markdownData = '';
-  var _focusNode = FocusNode();
-  bool isEditing = true;
+class _NoteScreenState extends ConsumerState<NoteScreen> {
+  final quill.QuillController _contentController =
+      quill.QuillController.basic();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _dialogController = TextEditingController();
 
-  final GlobalKey _widgetKey = GlobalKey();
-  double _widgetHeight = 0.0;
+  List<Category> catList = [];
 
-  String description = 'My great package';
+  final _focusNode = FocusNode();
 
-  void _getWidgetHeight() {
-    final RenderBox renderBox =
-        _widgetKey.currentContext?.findRenderObject() as RenderBox;
-    final height = renderBox.size.height;
-    setState(() {
-      _widgetHeight = height;
-    });
+  RequestSender requestSender = RequestSender();
+
+  // bool isEditing = true;
+
+  Future<String> generateText(String input) async {
+    requestSender.setAccessToken();
+    return await requestSender.sendRequest(input) ?? '';
   }
 
-  _saveNote() {}
+  void _textGeneratingDialog(String input, BuildContext context) {
+    _dialogController.text = input ?? '';
 
-  _changeMode() {
-    setState(() {
-      isEditing = !isEditing;
-    });
-    _getWidgetHeight();
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            content: TextField(
+              controller: _dialogController,
+              maxLines: 8,
+            ),
+            actions: [
+              TextButton(
+                  onPressed: _dialogController.text != ''
+                      ? () {
+                          generateText(_dialogController.text);
+                        }
+                      : null,
+                  child: const Text('Generate'))
+            ],
+          );
+        });
+  }
+
+  void setCatList(List<Category> allCatList) {
+    catList = [];
+
+    for (var category in allCatList) {
+      var notesList = category.notesList ?? [];
+
+      if (notesList.contains(widget.note.id)) {
+        catList.add(category);
+      }
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    _contentController.text = widget.note.content;
+    // _contentController.text = widget.note.content;
     _titleController.text = widget.note.title;
+
+    //////////////////
+    if (widget.note.content.isNotEmpty) {
+      final json = jsonDecode(widget.note.content);
+
+      _contentController.document = Document.fromJson(json);
+    }
   }
 
   @override
@@ -69,6 +118,19 @@ class _NoteScreenState extends State<NoteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final categoriesList = ref.watch(categoriesProvider);
+    final categoriesNotifier = ref.watch(categoriesProvider.notifier);
+
+    setCatList(categoriesList);
+    categoriesNotifier.loadCategories();
+
+    double minHeight = MediaQuery.of(context).size.height -
+        2 * MediaQuery.of(context).viewInsets.bottom; //TODO исправить хз как
+    // print(MediaQuery.of(context).size.height -
+    //     MediaQuery.of(context).viewInsets.bottom);
+    bool hasUndo = _contentController.hasUndo;
+    bool hasRedo = _contentController.hasRedo;
+
     return Scaffold(
       appBar: AppBar(
         title: TextField(
@@ -78,82 +140,136 @@ class _NoteScreenState extends State<NoteScreen> {
               ),
           decoration: const InputDecoration(
             border: InputBorder.none,
-            hintText: "Title",
+            hintText: 'Title',
           ),
         ),
         actions: [
           IconButton(
+            icon: hasUndo
+                ? const Icon(Icons.undo)
+                : Icon(
+                    Icons.undo,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.2),
+                  ),
+            onPressed: hasUndo
+                ? () {
+                    _contentController.undo();
+                  }
+                : null,
+          ),
+          IconButton(
+            icon: hasRedo
+                ? const Icon(Icons.redo)
+                : Icon(
+                    Icons.redo,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.2),
+                  ),
+            onPressed: _contentController.hasRedo
+                ? () {
+                    _contentController.redo();
+                  }
+                : null,
+          ),
+          IconButton(
               onPressed: () {
-                _changeMode();
-                print(_widgetHeight);
+                _textGeneratingDialog('input', context);
               },
-              icon: isEditing ? Icon(Icons.done) : Icon(Icons.edit))
+              icon: const Icon(Icons.add_comment))
         ],
       ),
-      // drawer: ...,
       body: PopScope(
         canPop: false,
         onPopInvoked: (bool didPop) {
           if (didPop) return;
           Navigator.of(context).pop(Note(
-              title: _titleController.text, content: _contentController.text));
+              title: _titleController.text,
+              content: jsonEncode(_contentController.document
+                  .toDelta()
+                  .toJson()))); //TODO plaintext -> json idk
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.only(top: 15.0, left: 8.0, right: 8.0),
+        child: OverlayBoundary(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
                 child: SingleChildScrollView(
-                  child: isEditing
-                      ? SizedBox(
-                          height: 500,
-                          child: TextField(
-                            key: _widgetKey,
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: "Enter Markdown text…",
-                            ),
-                            controller: _contentController,
-                            focusNode: _focusNode,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge!
-                                .copyWith(),
-                          ),
-                        )
-                      : Align(
-                          alignment: Alignment.topLeft,
-                          child: SizedBox(
-                            height: _widgetHeight + 100,
-                            child: InkWell(
-                              onDoubleTap: _changeMode,
-                              splashColor: Colors.transparent,
-                              child: Markdown(
-                                  // controller: _controller,
-                                  data: _contentController.text),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: CatRowNotesScreen(
+                              catList: catList,
+                              note: widget.note,
+                            )),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0, right: 8),
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: Text(
+                              'Last edit: ${widget.note.dateTime}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
                             ),
                           ),
                         ),
+                        Container(
+                          width: double.infinity,
+                          height: 1,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        Padding(
+                            padding:
+                                const EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: minHeight,
+                                ),
+                                child: quill.QuillEditor.basic(
+                                  controller: _contentController,
+                                  focusNode: _focusNode,
+                                  // scrollController: ScrollController(),
+                                  // readOnly: false,
+                                  configurations: QuillEditorConfigurations(
+                                      // showCursor: false,
+                                      embedBuilders: [
+                                        ImageEmbedBuilder(),
+                                      ]),
+                                ),
+                              ),
+                            )),
+                      ]),
                 ),
               ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: MarkdownToolbar(
-                // If you set useIncludedTextField to true, remove
-                // a) the controller and focusNode fields below and
-                // b) the TextField outside below widget
-                useIncludedTextField: false,
-                controller: _contentController,
-                focusNode: _focusNode,
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // QuillToolbarFont(contentController: _contentController),
+                    // QuillToolbarFormatting(
+                    //     contentController: _contentController),
+                    // QuillToolbarOther(contentController: _contentController),
+                    QuillCustomToolbar(contentController: _contentController),
+                  ],
+                ),
               ),
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );

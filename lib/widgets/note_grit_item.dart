@@ -1,12 +1,15 @@
+import 'dart:convert';
+
 import 'package:ai_note/provider/selected_notes_provider.dart';
 import 'package:ai_note/provider/toggle_mode_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ai_note/models/note.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:ai_note/provider/function_provider.dart';
+import 'package:ai_note/provider/note_function_provider.dart';
 
 class NoteGritItem extends ConsumerStatefulWidget {
   const NoteGritItem({
@@ -26,18 +29,26 @@ class NoteGritItem extends ConsumerStatefulWidget {
 }
 
 class _NoteGritItemState extends ConsumerState<NoteGritItem> {
-  bool _isChecked = false;
+  // bool _isChecked = false;
 
   @override
   Widget build(BuildContext context) {
     final noteFunctions = ref.watch(noteActionsProvider);
     final isSelectingMode = ref.watch(toggleModeProvider);
     final selectedNotes = ref.watch(selectedNotesProvider.notifier);
+    final selectedNotesList = ref.watch(selectedNotesProvider);
+    bool isSelected = false;
+    final matchingNotes =
+        selectedNotesList.where((note) => widget.note.id == note.id).toList();
+    if (matchingNotes.isNotEmpty) {
+      isSelected = true;
+    }
+
+    var jsonDex = jsonDecode(widget.note.content);
+    var contentDoc = Document.fromJson(jsonDex);
+    // print(jsonDex.toString() + ' ' + ff.toPlainText());
 
     void checkItem() {
-      setState(() {
-        _isChecked = !_isChecked;
-      });
       selectedNotes.toggleNoteSelection(widget.note);
     }
 
@@ -45,7 +56,7 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
       width: 15,
       height: 15,
       child: Checkbox(
-          value: _isChecked,
+          value: isSelected,
           onChanged: (bool? value) {
             checkItem();
           }),
@@ -62,9 +73,7 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
       onLongPress: () {
         ref.read(selectedNotesProvider.notifier).clearNoteSelection();
         ref.read(toggleModeProvider.notifier).toggleSelectingMode();
-        if (isSelectingMode) {
-          checkItem();
-        }
+        checkItem();
       },
       splashColor: Theme.of(context).primaryColor,
       borderRadius: BorderRadius.circular(16),
@@ -92,20 +101,28 @@ class _NoteGritItemState extends ConsumerState<NoteGritItem> {
             Align(
               alignment: Alignment.topLeft,
               child: Text(
-                widget.note.content,
+                contentDoc.toPlainText(),
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
-                maxLines: 2,
+                maxLines: 4,
                 overflow: TextOverflow.fade,
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (isSelectingMode) checkedWidget,
-                Spacer(),
+                const Spacer(),
+                widget.note.isPinned == true
+                    ? Transform.rotate(
+                        angle: 30 * 3.14 / 180,
+                        child: const Icon(
+                          Icons.push_pin_outlined,
+                          size: 18,
+                        ))
+                    : SizedBox.shrink(),
                 Text(
                   widget.note.dateTime.toString(),
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(

@@ -20,7 +20,11 @@ void _createNote(WidgetRef ref, BuildContext context) async {
 void _editNote(WidgetRef ref, BuildContext context, Note oldNote) async {
   Note editedNote = await Navigator.of(context).push(MaterialPageRoute(
       builder: (ctx) => NoteScreen(
-          note: Note(title: oldNote.title, content: oldNote.content))));
+          note: Note(
+              id: oldNote.id,
+              title: oldNote.title,
+              content: oldNote.content,
+              isPinned: oldNote.isPinned))));
   if (editedNote.title == oldNote.title &&
       editedNote.content == oldNote.content) {
     return;
@@ -69,24 +73,44 @@ void _deleteNote(
       });
 }
 
+void _togglePin(WidgetRef ref, List<Note> notesToPin) {
+  // final pinnedNotes = notesToPin.where((note) => note.isPinned == true);
+  final notPinnedNotes = notesToPin.where((note) => note.isPinned == false);
+
+  if (notPinnedNotes.isNotEmpty) {
+    for (var note in notesToPin) {
+      ref.read(notesProvider.notifier).pinNote(note);
+    }
+  } else {
+    for (var note in notesToPin) {
+      ref.read(notesProvider.notifier).unpinNote(note);
+    }
+  }
+
+  ref.read(toggleModeProvider.notifier).toggleSelectingMode();
+  ref.read(selectedNotesProvider.notifier).clearNoteSelection();
+}
+
 class NoteActionsProvider {
   final void Function(WidgetRef, BuildContext) onCreate;
   final void Function(WidgetRef ref, BuildContext context, Note oldNote) onEdit;
   final void Function(
       WidgetRef ref, BuildContext context, List<Note> notesToDelete) onDelete;
+  final void Function(WidgetRef ref, List<Note> notesToDelete) onTogglePin;
 
   NoteActionsProvider({
     required this.onCreate,
     required this.onEdit,
     required this.onDelete,
+    required this.onTogglePin,
   });
 }
 
 // Создаем Provider для предоставления инстанса ActionsProvider
 final noteActionsProvider = Provider<NoteActionsProvider>((ref) {
   return NoteActionsProvider(
-    onCreate: _createNote,
-    onEdit: _editNote,
-    onDelete: _deleteNote,
-  );
+      onCreate: _createNote,
+      onEdit: _editNote,
+      onDelete: _deleteNote,
+      onTogglePin: _togglePin);
 });
