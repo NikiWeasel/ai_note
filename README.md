@@ -1,6 +1,6 @@
 # ai_note
 
-pet project
+pet проект, в разработке
 
 ## Libraries
 
